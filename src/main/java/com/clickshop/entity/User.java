@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -57,6 +58,7 @@ public class User {
 	private List<OrderItem> orders;
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonManagedReference(value = "user-cart")
 	private List<Cart> cart = new ArrayList<>();
 
 	public boolean isAdmin() {

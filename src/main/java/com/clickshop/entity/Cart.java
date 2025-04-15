@@ -1,5 +1,7 @@
 package com.clickshop.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -20,6 +22,7 @@ public class Cart {
 	
 	@ManyToOne
 	@JoinColumn(name = "user_id", nullable = false, referencedColumnName = "uno")
+	@JsonBackReference(value = "user-cart")
     private User user;
 	
 	@ManyToOne
