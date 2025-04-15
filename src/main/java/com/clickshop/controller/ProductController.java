@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -58,45 +59,50 @@ public class ProductController {
 	 }
 
 	 
-	 @DeleteMapping("/delete")
+	 @DeleteMapping("/delete/{productId}")
 	 @ResponseBody
-	 public String deleteProduct(@RequestParam("id") int productId) {
+	 public ResponseEntity<String> deleteProduct(@PathVariable("productId") int productId) {
 	     try {
-	    	 boolean isDeleted = productService.deleteProduct(productId);
-	         return isDeleted ? "SUCCESS" : "FAIL";
+	         boolean isDeleted = productService.deleteProduct(productId);
+	         if (isDeleted) {
+	             return ResponseEntity.ok("SUCCESS");
+	         } else {
+	             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("FAIL");
+	         }
 	     } catch (Exception e) {
 	         e.printStackTrace();
-	         return "ERROR";
+	         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("ERROR");
 	     }
 	 }
 	 
-	 @PutMapping("/update")
-	    public ResponseEntity<String> updateProductField(
-	            @RequestParam("id") int productId,
-	            @RequestParam("field") String field,
-	            @RequestParam("value") String value) {	
-	        try {
-	        	System.out.println(productId);
-	        	System.out.println(field);
-	        	System.out.println(value);
-	            boolean isUpdated = productService.updateProductField(productId, field, value);
-	            if (isUpdated) {
-	                return ResponseEntity.ok("Product updated successfully!");
-	            } else {
-	                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found!");
-	            }
-	        } catch (IllegalArgumentException e) {
-	            return ResponseEntity.badRequest().body(e.getMessage());
-	        } catch (Exception e) {
-	            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
-	        }
-	    }
-
+	 @PutMapping("/update/{productId}")
+	 public ResponseEntity<String> updateProduct(
+		        @PathVariable("productId") int productId,
+		        @RequestBody Product product) {
+		    try {
+		        System.out.println("Updating product: " + productId);
+		        
+		        // Set the product ID to ensure it matches the path parameter
+		        product.setId(productId);
+		        
+		        boolean isUpdated = productService.updateProduct(product);
+		        if (isUpdated) {
+		            return ResponseEntity.ok("Product updated successfully!");
+		        } else {
+		            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found!");
+		        }
+		    } catch (IllegalArgumentException e) {
+		        return ResponseEntity.badRequest().body(e.getMessage());
+		    } catch (Exception e) {
+		        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
+		    }
+		}
+	 
 	 @GetMapping("/{id}")
 	    public ResponseEntity<?> getProductById(@PathVariable("id") int id, HttpSession session) {
 	        User.Role role = (User.Role) session.getAttribute("role");
 	        
-	        if (!SessionUtil.isValidSession(session) || !role.equals(User.Role.USER)) {
+	        if (!SessionUtil.isValidSession(session)) {
 	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 	                    .body(Map.of("error", "Unauthorized access"));
 	        }

@@ -11,7 +11,7 @@ public interface ProductService {
 
 	boolean deleteProduct(int pno);
 
-	public boolean updateProductField(int productId, String field, String value);
+	public boolean updateProduct(Product updatedProduct);
 
 	public List<Product> getAllProducts();
 

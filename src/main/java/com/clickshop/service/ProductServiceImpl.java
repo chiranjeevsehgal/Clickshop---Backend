@@ -53,36 +53,32 @@ public class ProductServiceImpl implements ProductService {
 		}
 	}
 
-	public boolean updateProductField(int productId, String field, String value) {
-		Optional<Product> optionalProduct = productRepository.findById(productId);
-		if (optionalProduct.isPresent()) {
-			Product product = optionalProduct.get();
-
-			switch (field) {
-			case "name":
-				product.setName(value);
-				break;
-			case "price":
-				product.setPrice(Float.parseFloat(value));
-				break;
-			case "description":
-				product.setDescription(value);
-				break;
-			case "stock":
-				product.setStock(Integer.parseInt(value));
-				break;
-			case "category":
-				product.setCategory(value);
-				break;
-			default:
-				throw new IllegalArgumentException("Invalid field: " + field);
-			}
-
-			productRepository.save(product);
-			return true;
-		}
-		return false;
+	public boolean updateProduct(Product updatedProduct) {
+	    Optional<Product> optionalProduct = productRepository.findById(updatedProduct.getId());
+	    
+	    if (optionalProduct.isPresent()) {
+	        Product existingProduct = optionalProduct.get();
+	        
+	        // Update all fields
+	        existingProduct.setName(updatedProduct.getName());
+	        existingProduct.setDescription(updatedProduct.getDescription());
+	        existingProduct.setPrice(updatedProduct.getPrice());
+	        existingProduct.setStock(updatedProduct.getStock());
+	        existingProduct.setCategory(updatedProduct.getCategory());
+	        
+	        // Only update image URL if it's provided
+//	        if (updatedProduct.getImageUrl() != null && !updatedProduct.getImageUrl().isEmpty()) {
+//	            existingProduct.setImageUrl(updatedProduct.getImageUrl());
+//	        }
+	        
+	        // Save the updated product
+	        productRepository.save(existingProduct);
+	        return true;
+	    }
+	    
+	    return false;
 	}
+
 
 	public List<Product> getAllProducts() {
 		ArrayList<Product> productList = new ArrayList<Product>();

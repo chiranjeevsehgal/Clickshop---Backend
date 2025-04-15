@@ -73,18 +73,25 @@ public class AdminController {
 	}
 
 	@GetMapping("/viewproducts")
-	public String showProductPage(ModelMap model, HttpSession session) {
-
-		User.Role role = (Role) session.getAttribute("role");
-		if (!SessionUtil.isValidSession(session) || role.equals(Role.USER)) {
-			return "redirect:/clickshop/auth/login";
-		} else if (role.equals(Role.ADMIN) || role.equals(Role.SUPER_ADMIN)) {
-			List<Product> products = productService.getAllProducts();
-			model.addAttribute("products", products);
-			return "adminProduct";
-		}
-		return "redirect:/clickshop/auth/login";
-	}
+	public ResponseEntity<?> getAllProducts(HttpSession session) {
+        User.Role role = (Role) session.getAttribute("role");
+        
+        // Check if user is admin
+        if (!SessionUtil.isValidSession(session) || role == null || 
+            (!role.equals(Role.ADMIN) && !role.equals(Role.SUPER_ADMIN))) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Unauthorized access", "redirect", "/auth/login"));
+        }
+        
+        try {
+            List<Product> products = productService.getAllProducts();
+            return ResponseEntity.ok(products);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to load products: " + e.getMessage()));
+        }
+    }
 
 	@GetMapping("/viewusers")
 	public ResponseEntity<?> getAllUsers(HttpSession session) {
