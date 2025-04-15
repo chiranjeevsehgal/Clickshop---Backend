@@ -18,23 +18,15 @@ public class ProductServiceImpl implements ProductService {
 	ProductRepository productRepository;
 
 	@Override
-	public boolean addProduct(Product product) {
+	public Product addProduct(Product product) {
 		// TODO Auto-generated method stub
 		Product product1 = productRepository.save(product);
 		if (product1 != null)
-			return true;
+			return product1;
 		else {
-			return false;
+			return null;
 		}
 	}
-
-//	@Override
-//	public ArrayList<Product> displayProducts() {
-//		
-//		ArrayList<Product> productList = new ArrayList<Product>();
-//		productRepository.findAll().forEach(product -> productList.add(product));
-//		return productList;
-//	}
 
 	@Override
 	public boolean deleteProduct(int pno) {

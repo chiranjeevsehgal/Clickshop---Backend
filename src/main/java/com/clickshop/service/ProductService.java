@@ -5,9 +5,7 @@ import java.util.List;
 import com.clickshop.entity.Product;
 
 public interface ProductService {
-	boolean addProduct(Product product);
-
-//	ArrayList<Product> displayProducts();
+	Product addProduct(Product product);
 
 	boolean deleteProduct(int pno);
 
