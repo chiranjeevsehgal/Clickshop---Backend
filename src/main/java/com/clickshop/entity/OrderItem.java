@@ -2,7 +2,6 @@ package com.clickshop.entity;
 
 import java.util.Date;
 
-import com.clickshop.entity.User.Status;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;

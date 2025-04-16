@@ -32,7 +32,7 @@ public class User {
 	private String contact;
 	private String address;
 	private String password;
-	
+
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private Status status;
@@ -48,6 +48,10 @@ public class User {
 	public enum Status {
 		ACTIVE, INACTIVE
 	};
+
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JsonIgnore
+	private List<Wishlist> wishlist = new ArrayList<>();
 
 	// Transient field for isadmin(not stored in the database)
 	@Transient
@@ -114,7 +118,6 @@ public class User {
 	public void setId(int id) {
 		this.id = id;
 	}
-	
 
 	public Status getStatus() {
 		return status;
@@ -138,6 +141,14 @@ public class User {
 
 	public void setUname(String uname) {
 		this.uname = uname;
+	}
+
+	public List<Wishlist> getWishlist() {
+		return wishlist;
+	}
+
+	public void setWishlist(List<Wishlist> wishlist) {
+		this.wishlist = wishlist;
 	}
 
 	public String getEmail() {

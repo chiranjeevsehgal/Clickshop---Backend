@@ -3,7 +3,6 @@ package com.clickshop.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.clickshop.entity.Cart;
-import com.clickshop.entity.CartItem;
 import com.clickshop.entity.Product;
 import com.clickshop.entity.User;
 import com.clickshop.repository.CartRepository;
