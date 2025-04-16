@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.clickshop.entity.OrderItem;
 import com.clickshop.entity.User;
 import com.clickshop.entity.User.Role;
+import com.clickshop.service.CartService;
 import com.clickshop.service.OrderService;
+import com.clickshop.service.UserService;
 import com.clickshop.utils.SessionUtil;
 
 import jakarta.servlet.http.HttpSession;
@@ -30,6 +33,12 @@ public class OrderController {
 
 	@Autowired
 	private OrderService orderService;
+	
+	@Autowired
+	private UserService userService;
+
+	@Autowired
+	private CartService cartService;
 
 	@GetMapping("/all")
     public ResponseEntity<?> getAllOrders(HttpSession session) {
@@ -173,6 +182,66 @@ public class OrderController {
 	        e.printStackTrace();
 	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 	                .body(Map.of("error", "Failed to load orders: " + e.getMessage()));
+	    }
+	}
+
+	@PostMapping("/create")
+    public ResponseEntity<?> createOrder(@RequestBody Map<String, Object> orderRequest, HttpSession session) {
+        // Check if user is logged in
+        Integer userId = (Integer) session.getAttribute("userId");
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Please login to create an order"));
+        }
+        
+        try {
+            User user = userService.getUserById(userId);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "User not found"));
+            }
+            
+            // Here, we're just preparing order data and not saving it yet
+            // The actual saving happens after payment confirmation
+            Map<String, Object> orderData = orderService.prepareOrder(orderRequest, user);
+            return ResponseEntity.ok(orderData);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to create order: " + e.getMessage()));
+        }
+    }
+
+	@PostMapping("/save")
+	public ResponseEntity<?> saveOrder(@RequestBody Map<String, Object> orderData, HttpSession session) {
+	    // Check if user is logged in
+	    Integer userId = (Integer) session.getAttribute("userId");
+	    if (userId == null) {
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+	                .body(Map.of("message", "Please login to save an order"));
+	    }
+
+	    try {
+	        User user = userService.getUserById(userId);
+	        if (user == null) {
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+	                    .body(Map.of("error", "User not found"));
+	        }
+
+	        // Use the service to save the order
+	        List<OrderItem> savedOrders = orderService.saveOrder(orderData, user);
+	        
+	        // Clear the user's cart
+	        cartService.clearCart(userId);
+	        
+	        return ResponseEntity.ok(Map.of(
+	                "orderId", savedOrders.get(0).getId(),
+	                "totalOrders", savedOrders.size(),
+	                "message", "Orders placed successfully!"
+	            ));
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                .body(Map.of("error", "Failed to save order: " + e.getMessage()));
 	    }
 	}
 

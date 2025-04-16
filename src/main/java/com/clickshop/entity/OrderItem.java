@@ -34,56 +34,94 @@ public class OrderItem {
     @JoinColumn(name = "product_id") 
     private Product product;
 
-    @Column(name = "quantity")
+    @Override
+	public String toString() {
+		return "OrderItem [orderId=" + orderId + ", user=" + user + ", product=" + product + ", quantity=" + quantity
+				+ ", totalPrice=" + totalPrice + ", orderDate=" + orderDate + ", orderStatus=" + orderStatus
+				+ ", paymentId=" + paymentId + ", paymentStatus=" + paymentStatus + ", formattedDate=" + formattedDate
+				+ ", subtotal=" + subtotal + ", shipping=" + shipping + ", discount=" + discount + "]";
+	}
+
+	@Column(name = "quantity")
     private int quantity;
 
     @Column(name = "total_price")
-    private float totalPrice;
+    private double totalPrice;
 
     @Column(name = "order_date")
     @Temporal(TemporalType.TIMESTAMP)
     private Date orderDate;
     
     @Enumerated(EnumType.STRING)
-	@Column(nullable = false, name="status")
-	private Order_Status orderStatus;
+    @Column(nullable = false, name="status")
+    private OrderStatus orderStatus;
     
-    public enum Order_Status {
-    	PROCESSING, CANCELLED, SHIPPED,DELIVERED
-	};
+    public enum OrderStatus {
+        PROCESSING, CANCELLED, SHIPPED, DELIVERED
+    };
     
+    // Added for Razorpay integration
+    @Column(name = "payment_id")
+    private String paymentId;
+    
+    @Column(name = "payment_status")
+    private String paymentStatus;
+    
+    // For formatting display date
+    @Column(name = "formatted_date")
     private String formattedDate;
+    
+    private Double subtotal;
+    
+    private Double shipping;
+    
+    private Double discount;
 
-
-    public String getFormattedDate() {
-		return formattedDate;
+    public Double getSubtotal() {
+		return subtotal;
 	}
 
-	public void setFormattedDate(String formattedDate) {
-		this.formattedDate = formattedDate;
+	public void setSubtotal(Double subtotal) {
+		this.subtotal = subtotal;
 	}
 
-	public OrderItem(User user, Product product, int quantity, float totalPrice, String formattedDate) {
-		super();
-		this.user = user;
-		this.product = product;
-		this.quantity = quantity;
-		this.totalPrice = totalPrice;
-		this.orderDate = new Date();
+	public Double getShipping() {
+		return shipping;
+	}
+
+	public void setShipping(Double shipping) {
+		this.shipping = shipping;
+	}
+
+	public Double getDiscount() {
+		return discount;
+	}
+
+	public void setDiscount(Double discount) {
+		this.discount = discount;
+	}
+
+	// Constructors
+    public OrderItem() {
+    }
+
+    public OrderItem(User user, Product product, int quantity, float totalPrice, String formattedDate) {
+        this.user = user;
+        this.product = product;
+        this.quantity = quantity;
+        this.totalPrice = totalPrice;
+        this.orderDate = new Date();
         this.formattedDate = formattedDate;
-	}
+        this.orderStatus = OrderStatus.PROCESSING;
+    }
 
-	public OrderItem() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
-
-	public int getOrderId() {
+    // Getters and Setters
+    public int getId() {
         return orderId;
     }
 
-    public void setOrderId(int orderId) {
-        this.orderId = orderId;
+    public void setId(int id) {
+        this.orderId = id;
     }
 
     public User getUser() {
@@ -110,12 +148,12 @@ public class OrderItem {
         this.quantity = quantity;
     }
 
-    public float getTotalPrice() {
+    public double getTotalPrice() {
         return totalPrice;
     }
 
-    public void setTotalPrice(float totalPrice) {
-        this.totalPrice = totalPrice;
+    public void setTotalPrice(double itemSubtotal) {
+        this.totalPrice = itemSubtotal;
     }
 
     public Date getOrderDate() {
@@ -126,11 +164,35 @@ public class OrderItem {
         this.orderDate = orderDate;
     }
 
-    public Order_Status getOrderStatus() {
-    	return orderStatus;
+    public OrderStatus getOrderStatus() {
+        return orderStatus;
     }
     
-    public void setOrderStatus(Order_Status status) {
-    	this.orderStatus = status;
+    public void setOrderStatus(OrderStatus status) {
+        this.orderStatus = status;
+    }
+    
+    public String getPaymentId() {
+        return paymentId;
+    }
+    
+    public void setPaymentId(String paymentId) {
+        this.paymentId = paymentId;
+    }
+    
+    public String getPaymentStatus() {
+        return paymentStatus;
+    }
+    
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
+    public String getFormattedDate() {
+        return formattedDate;
+    }
+
+    public void setFormattedDate(String formattedDate) {
+        this.formattedDate = formattedDate;
     }
 }

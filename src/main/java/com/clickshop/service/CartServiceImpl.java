@@ -18,7 +18,6 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-
 @Service
 public class CartServiceImpl implements CartService {
 
@@ -53,7 +52,7 @@ public class CartServiceImpl implements CartService {
             cartMap.put("productName", cart.getProduct().getName());
             cartMap.put("quantity", cart.getQuantity());
             cartMap.put("totalPrice", cart.getQuantity() * cart.getProduct().getPrice());
-//            cartMap.put("orderDate", cart.getOrderDate());
+            // cartMap.put("orderDate", cart.getOrderDate());
             result.add(cartMap);
         }
 
@@ -61,52 +60,62 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-	@Transactional
-	public String addToCart(int userId, int productId, int quantity) {
-    	 Optional<User> userOpt = userRepository.findById(userId);
-         Optional<Product> productOpt = productRepository.findById(productId);
+    @Transactional
+    public String addToCart(int userId, int productId, int quantity) {
+        Optional<User> userOpt = userRepository.findById(userId);
+        Optional<Product> productOpt = productRepository.findById(productId);
 
-         if (!userOpt.isPresent()) {
-             return "User not found!";
-         }
-         if (!productOpt.isPresent()) {
-             return "Product not found!";
-         }
+        if (!userOpt.isPresent()) {
+            return "User not found!";
+        }
+        if (!productOpt.isPresent()) {
+            return "Product not found!";
+        }
 
-         User user = userOpt.get();
-         Product product = productOpt.get();
+        User user = userOpt.get();
+        Product product = productOpt.get();
 
-         // Check if item already exists in cart
-         Cart existingCart = cartRepository.findByUserIdAndProductId(userId, productId);
-         if (existingCart != null) {
-             existingCart.setQuantity(existingCart.getQuantity() + quantity);
-             cartRepository.save(existingCart);
-             return "Cart updated successfully!";
-         }
+        // Check if item already exists in cart
+        Cart existingCart = cartRepository.findByUserIdAndProductId(userId, productId);
+        if (existingCart != null) {
+            existingCart.setQuantity(existingCart.getQuantity() + quantity);
+            cartRepository.save(existingCart);
+            return "Cart updated successfully!";
+        }
 
-         // New cart entry
-         Cart newCart = new Cart();
-         newCart.setUser(user);
-         newCart.setProduct(product);
-         newCart.setQuantity(quantity);
+        // New cart entry
+        Cart newCart = new Cart();
+        newCart.setUser(user);
+        newCart.setProduct(product);
+        newCart.setQuantity(quantity);
 
-         cartRepository.save(newCart);
-         return "Item added to cart successfully!";
-     }
-    
+        cartRepository.save(newCart);
+        return "Item added to cart successfully!";
+    }
+
     @Transactional
     @Override
     public String removeCartItem(int cartId) {
         cartRepository.deleteById(cartId);
         return "Item removed from cart successfully!";
     }
-    
+
     @Override
     public void updateCartItemQuantity(int itemId, int quantity) {
         Cart cartItem = cartRepository.findById(itemId)
-            .orElseThrow(() -> new NoSuchElementException("Cart item not found"));
+                .orElseThrow(() -> new NoSuchElementException("Cart item not found"));
 
         cartItem.setQuantity(quantity);
         cartRepository.save(cartItem);
+    }
+
+    @Transactional
+    @Override
+    public void clearCart(Integer userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Delete all cart items for the user
+        cartRepository.deleteByUser(user);
     }
 }

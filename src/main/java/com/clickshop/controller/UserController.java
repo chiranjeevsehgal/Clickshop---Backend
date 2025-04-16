@@ -44,13 +44,13 @@ public class UserController {
 //	To check whether user is admin or user
 	@GetMapping("/check-role")
 	public ResponseEntity<String> checkUserRole(HttpSession session) {
-	    User.Role role = (User.Role) session.getAttribute("role");
+		User.Role role = (User.Role) session.getAttribute("role");
 
-	    if (role != null) {
-	        return ResponseEntity.ok(role.toString()); // Return the role as a string
-	    } else {
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not authenticated");
-	    }
+		if (role != null) {
+			return ResponseEntity.ok(role.toString()); // Return the role as a string
+		} else {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not authenticated");
+		}
 	}
 
 //    Get user profile data
@@ -65,7 +65,7 @@ public class UserController {
 		try {
 			// Get userId from session
 			Integer userId = (Integer) session.getAttribute("userId");
-			System.out.println("here"+userId);
+			System.out.println("here" + userId);
 			if (userId == null) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 						.body(Map.of("error", "No user ID in session", "redirect", "/auth/login"));
@@ -92,7 +92,6 @@ public class UserController {
 					.body(Map.of("error", "An error occurred: " + e.getMessage()));
 		}
 	}
-	
 
 // Edit user profile except password
 	@PutMapping("/updateprofile")
@@ -178,25 +177,11 @@ public class UserController {
 		return "redirect:/clickshop/auth/login";
 	}
 
-	@GetMapping("/vieworders")
-	public String showOrdersPage(ModelMap model, HttpSession session) {
-		User.Role role = (Role) session.getAttribute("role");
-		if (!SessionUtil.isValidSession(session) || role.equals(Role.ADMIN) || role.equals(Role.SUPER_ADMIN)) {
-			return "redirect:/clickshop/auth/login";
-		} else if (role.equals(Role.USER)) {
-			int uid = (int) session.getAttribute("userId");
-			List<OrderItem> orders = orderService.getOrderHistoryByUserId(uid);
-			model.addAttribute("orders", orders);
-			return ("viewOrders");
-		}
-		return "redirect:/clickshop/auth/login";
-	}
-
 	@GetMapping("/products")
 	public ResponseEntity<?> getProducts(HttpServletRequest request, HttpSession session) {
 		User.Role role = (User.Role) session.getAttribute("role");
 
-		if (role == null ||role.equals(User.Role.USER)) {
+		if (role == null || role.equals(User.Role.USER)) {
 			List<Product> products = productService.getAllProducts();
 			return ResponseEntity.ok(products);
 		}
@@ -204,7 +189,7 @@ public class UserController {
 		if (role.equals(User.Role.ADMIN) || role.equals(User.Role.SUPER_ADMIN)) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 					.body(Map.of("error", "Unauthorized access", "redirect", "/auth/login"));
-		} 
+		}
 
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 				.body(Map.of("error", "Authentication required", "redirect", "/clickshop/auth/login"));
@@ -248,6 +233,7 @@ public class UserController {
 			}
 
 			List<OrderItem> orders = orderService.getOrderHistoryByUserId(uid);
+			System.out.println(orders.toString());
 			return ResponseEntity.ok(orders);
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -287,11 +273,16 @@ public class UserController {
 		}
 	}
 
-	
 	// Get user by email
 	@GetMapping("/email/{email}")
 	public User getUserByEmail(@PathVariable String email) {
 		return userService.getUserByEmail(email);
+	}
+
+	// Get user by id
+	@GetMapping("/{id}")
+	public User getUserById(@PathVariable int id) {
+		return userService.getUserById(id);
 	}
 
 	// Get all users
@@ -306,5 +297,4 @@ public class UserController {
 		return userService.isAdmin(userId);
 	}
 
-	
 }

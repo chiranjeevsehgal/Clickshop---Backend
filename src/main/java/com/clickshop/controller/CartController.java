@@ -57,6 +57,22 @@ public class CartController {
 
 	}
 
+	@DeleteMapping("/clear")
+	public ResponseEntity<Map<String, String>> clearCart(HttpSession session) {
+		try {
+			Integer userId = (Integer) session.getAttribute("userId");
+			if (userId == null) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+						.body(Map.of("message", "Please login first"));
+			}
+			cartService.clearCart(userId);
+			return ResponseEntity.ok(Map.of("message", "Cart cleared successfully."));
+		} catch (Exception e) {
+			return ResponseEntity.badRequest().body(Map.of("error", "Error clearing cart" + e.getMessage()));
+		}
+
+	}
+
 	@PutMapping("/update/{itemId}")
 	public ResponseEntity<?> updateQuantity(@PathVariable int itemId, @RequestBody Map<String, Integer> payload) {
 		try {

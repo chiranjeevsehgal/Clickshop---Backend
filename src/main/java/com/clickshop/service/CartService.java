@@ -18,4 +18,6 @@ public interface CartService {
     
     void updateCartItemQuantity(int itemId, int quantity);
 
+	public void clearCart(Integer userId);
+
 }

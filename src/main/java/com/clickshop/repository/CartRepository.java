@@ -5,6 +5,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import com.clickshop.entity.Cart;
+import com.clickshop.entity.User;
 
 @Repository 										// table name, p key datatype
 public interface CartRepository extends CrudRepository<Cart, Integer> {
@@ -16,5 +17,8 @@ public interface CartRepository extends CrudRepository<Cart, Integer> {
 	Cart findByUserIdAndProductId(int userId, int productId);
 
 	List<Cart> findAll();
+
+	void deleteByUser(User user);
+
 
 }
