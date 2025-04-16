@@ -1,6 +1,5 @@
 package com.clickshop.controller;
 
-import com.clickshop.entity.Cart;
 import com.clickshop.entity.OrderItem;
 import com.clickshop.entity.Product;
 import com.clickshop.entity.User;
@@ -18,11 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.WebRequest;
-import org.springframework.web.servlet.ModelAndView;
 
 import java.util.ArrayList;
 import java.util.HashMap;

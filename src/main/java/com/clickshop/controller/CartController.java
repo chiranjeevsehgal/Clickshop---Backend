@@ -13,11 +13,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.clickshop.service.CartService;
-import com.clickshop.service.ProductService;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -25,8 +23,6 @@ import jakarta.servlet.http.HttpSession;
 @RequestMapping("/cart")
 public class CartController {
 	
-	@Autowired
-    private ProductService productService;
 	
     @Autowired
     private CartService cartService;
@@ -40,7 +36,7 @@ public class CartController {
             int productId = (int) payload.get("productId");
             int quantity = (int) payload.get("quantity");
 
-            String result = cartService.addToCart(userId, productId, quantity);
+            cartService.addToCart(userId, productId, quantity);
 
             return ResponseEntity.ok(Map.of("message", "Item added to cart successfully."));
         } catch (Exception e) {

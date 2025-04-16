@@ -1,6 +1,5 @@
 package com.clickshop.controller;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,24 +8,17 @@ import java.util.NoSuchElementException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.clickshop.entity.OrderItem;
-import com.clickshop.entity.Product;
 import com.clickshop.entity.User;
 import com.clickshop.entity.User.Role;
-import com.clickshop.service.AdminService;
 import com.clickshop.service.OrderService;
-import com.clickshop.service.ProductService;
-import com.clickshop.service.UserService;
 import com.clickshop.utils.SessionUtil;
 
 import jakarta.servlet.http.HttpSession;
@@ -35,14 +27,6 @@ import jakarta.servlet.http.HttpSession;
 @RequestMapping("/orders")
 public class OrderController {
 	
-	@Autowired
-	private AdminService adminService;
-
-	@Autowired
-	private ProductService productService;
-
-	@Autowired
-	private UserService userService;
 
 	@Autowired
 	private OrderService orderService;
