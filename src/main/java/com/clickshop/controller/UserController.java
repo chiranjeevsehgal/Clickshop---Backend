@@ -196,14 +196,15 @@ public class UserController {
 	public ResponseEntity<?> getProducts(HttpServletRequest request, HttpSession session) {
 		User.Role role = (User.Role) session.getAttribute("role");
 
-		if (!SessionUtil.isValidSession(session) || role.equals(User.Role.ADMIN)
-				|| role.equals(User.Role.SUPER_ADMIN)) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-					.body(Map.of("error", "Unauthorized access", "redirect", "/auth/login"));
-		} else if (role.equals(User.Role.USER)) {
+		if (role == null ||role.equals(User.Role.USER)) {
 			List<Product> products = productService.getAllProducts();
 			return ResponseEntity.ok(products);
 		}
+
+		if (role.equals(User.Role.ADMIN) || role.equals(User.Role.SUPER_ADMIN)) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+					.body(Map.of("error", "Unauthorized access", "redirect", "/auth/login"));
+		} 
 
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 				.body(Map.of("error", "Authentication required", "redirect", "/clickshop/auth/login"));

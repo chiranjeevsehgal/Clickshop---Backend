@@ -52,14 +52,20 @@ public class WishlistController  {
 
     @PostMapping("/add/{productId}")
     public ResponseEntity<?> addToWishlist(@PathVariable("productId") int productId, HttpSession session) {
-        if (!SessionUtil.isValidSession(session)) {
+        Integer uid = (Integer) session.getAttribute("userId");
+        
+        if (uid == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Unauthorized access"));
+                    .body(Map.of("error", "Login required", "message", "Please login to add items to wishlist"));
         }
+    
         
         try {
-            int uid = (int) session.getAttribute("userId");
             User user = userService.getUserById(uid);
+            if (user == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "User not found"));
+            }
             Wishlist wishlistItem = wishlistService.addToWishlist(user, productId);
             return ResponseEntity.status(HttpStatus.CREATED).body(wishlistItem);
         } catch (RuntimeException e) {

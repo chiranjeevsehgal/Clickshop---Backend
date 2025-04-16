@@ -1,6 +1,5 @@
 package com.clickshop.controller;
 
-
 import java.util.List;
 import java.util.Map;
 
@@ -29,110 +28,115 @@ import jakarta.servlet.http.HttpSession;
 @RequestMapping("/product")
 public class ProductController {
 	@Autowired
-    private ProductService productService;
+	private ProductService productService;
 
-	 
-	 @PostMapping("/add")
-	 @ResponseBody
-	 public ResponseEntity<?> addProduct(@RequestBody Product product) {
-	     try {
-	         Product addedProduct = productService.addProduct(product);
-	         
-	         if (addedProduct != null) {
-	             return ResponseEntity.status(HttpStatus.CREATED).body(addedProduct);
-	         } else {
-	             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-	                     .body(Map.of("error", "Failed to add product"));
-	         }
-	     } catch (Exception e) {
-	         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-	                 .body(Map.of("error", "An error occurred: " + e.getMessage()));
-	     }
-	 }
+	@PostMapping("/add")
+	@ResponseBody
+	public ResponseEntity<?> addProduct(@RequestBody Product product) {
+		try {
+			Product addedProduct = productService.addProduct(product);
 
-	 
-	 @DeleteMapping("/delete/{productId}")
-	 @ResponseBody
-	 public ResponseEntity<String> deleteProduct(@PathVariable("productId") int productId) {
-	     try {
-	         boolean isDeleted = productService.deleteProduct(productId);
-	         if (isDeleted) {
-	             return ResponseEntity.ok("SUCCESS");
-	         } else {
-	             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("FAIL");
-	         }
-	     } catch (Exception e) {
-	         e.printStackTrace();
-	         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("ERROR");
-	     }
-	 }
-	 
-	 @PutMapping("/update/{productId}")
-	 public ResponseEntity<String> updateProduct(
-		        @PathVariable("productId") int productId,
-		        @RequestBody Product product) {
-		    try {
-		        System.out.println("Updating product: " + productId);
-		        
-		        // Set the product ID to ensure it matches the path parameter
-		        product.setId(productId);
-		        
-		        boolean isUpdated = productService.updateProduct(product);
-		        if (isUpdated) {
-		            return ResponseEntity.ok("Product updated successfully!");
-		        } else {
-		            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found!");
-		        }
-		    } catch (IllegalArgumentException e) {
-		        return ResponseEntity.badRequest().body(e.getMessage());
-		    } catch (Exception e) {
-		        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
-		    }
+			if (addedProduct != null) {
+				return ResponseEntity.status(HttpStatus.CREATED).body(addedProduct);
+			} else {
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+						.body(Map.of("error", "Failed to add product"));
+			}
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(Map.of("error", "An error occurred: " + e.getMessage()));
 		}
-	 
-	 @GetMapping("/{id}")
-	    public ResponseEntity<?> getProductById(@PathVariable("id") int id, HttpSession session) {
-	        
-	        if (!SessionUtil.isValidSession(session)) {
-	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-	                    .body(Map.of("error", "Unauthorized access"));
-	        }
-	        
-	        try {
-	            Product product = productService.getProductByIdService(id);
-	            return ResponseEntity.ok(product);
-	        } catch (Exception e) {
-	            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-	                    .body(Map.of("error", "Product not found"));
-	        }
-	    }
-	 
-	 @GetMapping("/category/{category}")
-	    public ResponseEntity<?> getProductsByCategory(@PathVariable String category, HttpSession session) {
-	        User.Role role = (User.Role) session.getAttribute("role");
-	        
-	        if (!SessionUtil.isValidSession(session) || !role.equals(User.Role.USER)) {
-	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-	                    .body(Map.of("error", "Unauthorized access"));
-	        }
-	        
-//	        List<Product> products = productService.getProductsByCategory(category);
-	        List<Product> products = null;
-	        return ResponseEntity.ok(products);
-	    }
-	    
-	    @GetMapping("/products/search")
-	    public ResponseEntity<?> searchProducts(@RequestParam("term") String searchTerm, HttpSession session) {
-	        User.Role role = (User.Role) session.getAttribute("role");
-	        
-	        if (!SessionUtil.isValidSession(session) || !role.equals(User.Role.USER)) {
-	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-	                    .body(Map.of("error", "Unauthorized access"));
-	        }
-	        
-//	        List<Product> products = productService.searchProducts(searchTerm);
-	        List<Product> products=null;
-	        return ResponseEntity.ok(products);
-	    }
-	 
+	}
+
+	@DeleteMapping("/delete/{productId}")
+	@ResponseBody
+	public ResponseEntity<String> deleteProduct(@PathVariable("productId") int productId) {
+		try {
+			boolean isDeleted = productService.deleteProduct(productId);
+			if (isDeleted) {
+				return ResponseEntity.ok("SUCCESS");
+			} else {
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("FAIL");
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("ERROR");
+		}
+	}
+
+	@PutMapping("/update/{productId}")
+	public ResponseEntity<String> updateProduct(
+			@PathVariable("productId") int productId,
+			@RequestBody Product product) {
+		try {
+			System.out.println("Updating product: " + productId);
+
+			// Set the product ID to ensure it matches the path parameter
+			product.setId(productId);
+
+			boolean isUpdated = productService.updateProduct(product);
+			if (isUpdated) {
+				return ResponseEntity.ok("Product updated successfully!");
+			} else {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found!");
+			}
+		} catch (IllegalArgumentException e) {
+			return ResponseEntity.badRequest().body(e.getMessage());
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
+		}
+	}
+
+	@GetMapping("/{id}")
+	public ResponseEntity<?> getProductById(@PathVariable("id") int id, HttpSession session) {
+		User.Role role = (User.Role) session.getAttribute("role");
+
+		if (role == null || role.equals(User.Role.USER)) {
+			try {
+				Product product = productService.getProductByIdService(id);
+				return ResponseEntity.ok(product);
+			} catch (Exception e) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND)
+						.body(Map.of("error", "Product not found"));
+			}
+		}
+
+		// For logged in users
+		if (!SessionUtil.isValidSession(session) || role.equals(User.Role.ADMIN) || role.equals(User.Role.SUPER_ADMIN)) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+					.body(Map.of("error", "Unauthorized access"));
+		}
+
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+				.body(Map.of("error", "Authentication required", "redirect", "/clickshop/auth/login"));
+	}
+
+	@GetMapping("/category/{category}")
+	public ResponseEntity<?> getProductsByCategory(@PathVariable String category, HttpSession session) {
+		User.Role role = (User.Role) session.getAttribute("role");
+
+		if (!SessionUtil.isValidSession(session) || !role.equals(User.Role.USER)) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+					.body(Map.of("error", "Unauthorized access"));
+		}
+
+		// List<Product> products = productService.getProductsByCategory(category);
+		List<Product> products = null;
+		return ResponseEntity.ok(products);
+	}
+
+	@GetMapping("/products/search")
+	public ResponseEntity<?> searchProducts(@RequestParam("term") String searchTerm, HttpSession session) {
+		User.Role role = (User.Role) session.getAttribute("role");
+
+		if (!SessionUtil.isValidSession(session) || !role.equals(User.Role.USER)) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+					.body(Map.of("error", "Unauthorized access"));
+		}
+
+		// List<Product> products = productService.searchProducts(searchTerm);
+		List<Product> products = null;
+		return ResponseEntity.ok(products);
+	}
+
 }
