@@ -219,7 +219,7 @@ public class OrderServiceImpl implements OrderService {
             // Extract payment information
             String paymentId = (String) orderData.get("paymentId");
             String paymentStatus = (String) orderData.get("paymentStatus");
-            System.out.println(orderData);
+            
             
             // Extract all items from cart
             Map<String, Object> usertemp = (Map<String, Object>) orderData.get("user");
@@ -255,7 +255,6 @@ public class OrderServiceImpl implements OrderService {
                 // Calculate item total price (price * quantity)
                 float itemPrice = getFloatValue(itemtemp, "price");
                 double itemSubtotal = itemPrice * order.getQuantity();
-                order.setTotalPrice(itemSubtotal);
 
                 // Set order date
                 order.setOrderDate(currentDate);
@@ -269,20 +268,19 @@ public class OrderServiceImpl implements OrderService {
                 order.setSubtotal(itemSubtotal);
                 
                 // Calculate proportional shipping and discount
-                double totalAmount = getDoubleValue(orderData, "subtotal");
-                double shippingTotal = getDoubleValue(orderData, "shipping");
-                double discountTotal = getDoubleValue(orderData, "discount");
+                // double totalAmount = getDoubleValue(orderData, "amount");
+                double shippingTotal = 99.0;
+                double discountTotal = 0;
+                discountTotal = getDoubleValue(orderData, "discount");
+                order.setShipping(shippingTotal);
                 
-                if (totalAmount > 0) {
+                if (discountTotal != 0) {
                     // Calculate proportional shipping and discount based on item's share of total
-                    double proportion = itemSubtotal / totalAmount;
-                    order.setShipping(shippingTotal * proportion);
-                    order.setDiscount(discountTotal * proportion);
+                    order.setDiscount(discountTotal);
                 } else {
-                    order.setShipping(0.0);
                     order.setDiscount(0.0);
                 }
-
+                order.setTotalPrice(itemSubtotal+shippingTotal-discountTotal);
                 // Set status to PROCESSING
                 order.setOrderStatus(OrderItem.OrderStatus.PROCESSING);
 
