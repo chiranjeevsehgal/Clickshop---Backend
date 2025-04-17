@@ -43,7 +43,7 @@ public class OrderController {
 	@GetMapping("/all")
     public ResponseEntity<?> getAllOrders(HttpSession session) {
         User.Role role = (Role) session.getAttribute("role");
-        System.out.println("Hi");
+        
         // Check if user is admin
         if (!SessionUtil.isValidSession(session) || role == null || 
             (!role.equals(Role.ADMIN) && !role.equals(Role.SUPER_ADMIN))) {

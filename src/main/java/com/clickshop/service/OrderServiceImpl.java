@@ -50,7 +50,6 @@ public class OrderServiceImpl implements OrderService {
 
 	@Override
 	public List<OrderItem> getOrderHistoryByUserId(int userId) {
-		// TODO Auto-generated method stub
 		return orderRepository.findByUserId(userId);
 	}
 

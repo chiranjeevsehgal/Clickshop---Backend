@@ -1,27 +1,19 @@
 package com.clickshop.service;
 
 import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import com.clickshop.entity.Product;
 import com.clickshop.entity.User;
-import com.clickshop.entity.Wishlist;
-import com.clickshop.repository.ProductRepository;
-import com.clickshop.repository.WishlistRepository;
 import com.razorpay.Order;
 import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
 import com.razorpay.Utils;
 
-import jakarta.transaction.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 
