@@ -65,6 +65,25 @@ public class User {
 	@JsonManagedReference(value = "user-cart")
 	private List<Cart> cart = new ArrayList<>();
 
+	public String getAuthProvider() {
+		return authProvider;
+	}
+
+	public void setAuthProvider(String authProvider) {
+		this.authProvider = authProvider;
+	}
+
+	public String getProviderId() {
+		return providerId;
+	}
+
+	public void setProviderId(String providerId) {
+		this.providerId = providerId;
+	}
+
+	private String authProvider; 
+	private String providerId; 
+
 	public boolean isAdmin() {
 		return isAdmin;
 	}
