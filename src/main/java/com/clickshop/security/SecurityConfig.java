@@ -37,7 +37,7 @@ public class SecurityConfig {
                 .requestMatchers("/cart/**").hasAuthority("ROLE_USER")
                 .requestMatchers("/wishlist/**").hasAuthority("ROLE_USER")
                 .requestMatchers("/orders/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
-                .requestMatchers("/product/**").hasAuthority("ROLE_USER")
+                .requestMatchers("/product/**").hasAnyAuthority("ROLE_USER", "ROLE_SUPER_ADMIN", "ROLE_ADMIN")
                 // .requestMatchers(HttpMethod.GET, "/products/**").permitAll()
                 .requestMatchers("/admin/**").hasAnyAuthority("ROLE_SUPER_ADMIN", "ROLE_ADMIN")
                 .anyRequest().authenticated()

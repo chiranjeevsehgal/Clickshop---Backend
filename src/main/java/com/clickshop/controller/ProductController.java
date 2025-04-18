@@ -90,21 +90,14 @@ public class ProductController {
 
 	@GetMapping("/{id}")
 	public ResponseEntity<?> getProductById(@PathVariable("id") int id) {
-		User.Role role = securityUtils.getCurrentUserRole();
 
-		if (role == null || role.equals(User.Role.USER)) {
-			try {
+		try {
 				Product product = productService.getProductByIdService(id);
 				return ResponseEntity.ok(product);
 			} catch (Exception e) {
 				return ResponseEntity.status(HttpStatus.NOT_FOUND)
 						.body(Map.of("error", "Product not found"));
 			}
-		}
-
-
-		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-				.body(Map.of("error", "Authentication required", "redirect", "/clickshop/auth/login"));
 	}
 
 	@GetMapping("/category/{category}")
