@@ -15,6 +15,9 @@ public interface UserRepository extends CrudRepository<User, Integer> {
     User findByUname(String uname);
     
     List<User> findByRoleIn(List<User.Role> roles);
+    
+    boolean existsByEmail(String email);
+    boolean existsByUname(String username);
 	
 	
 }

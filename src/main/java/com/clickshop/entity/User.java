@@ -202,7 +202,7 @@ public class User {
 	@Override
 	public String toString() {
 		return "Customer [id=" + id + ", name=" + name + ", uname=" + uname + ", email=" + email + ", password="
-				+ password + ", phone=" + contact + ", address=" + address + ", cart=" + cart + "]";
+				+ password + ", phone=" + contact + ", address=" + address;
 	}
 
 }

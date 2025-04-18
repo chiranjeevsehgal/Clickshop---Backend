@@ -3,15 +3,13 @@ package com.clickshop.controller;
 import com.clickshop.entity.OrderItem;
 import com.clickshop.entity.Product;
 import com.clickshop.entity.User;
-import com.clickshop.entity.User.Role;
+import com.clickshop.security.SecurityUtils;
 import com.clickshop.service.CartService;
 import com.clickshop.service.OrderService;
 import com.clickshop.service.ProductService;
 import com.clickshop.service.UserService;
-import com.clickshop.utils.SessionUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -40,37 +38,30 @@ public class UserController {
 
 	@Autowired
 	private CartService cartService;
+	
+	@Autowired
+	private SecurityUtils securityUtils;
 
-//	To check whether user is admin or user
+	// To check whether user is admin or user
 	@GetMapping("/check-role")
-	public ResponseEntity<String> checkUserRole(HttpSession session) {
-		User.Role role = (User.Role) session.getAttribute("role");
-
-		if (role != null) {
-			return ResponseEntity.ok(role.toString()); // Return the role as a string
-		} else {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not authenticated");
-		}
+	public ResponseEntity<String> checkUserRole() {
+		
+		User.Role role = securityUtils.getCurrentUserRole();
+		System.out.println(role);
+		return ResponseEntity.ok(role.toString()); // Return the role as a string
+		
 	}
 
-//    Get user profile data
+	// Get user profile data
 	@GetMapping("/profile")
-	public ResponseEntity<?> getUserProfile(HttpSession session) {
+	public ResponseEntity<?> getUserProfile() {
 		// Check if user is logged in
-		if (!SessionUtil.isValidSession(session)) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-					.body(Map.of("error", "Unauthorized access", "redirect", "/auth/login"));
-		}
+		
 
 		try {
-			// Get userId from session
-			Integer userId = (Integer) session.getAttribute("userId");
+			int userId = securityUtils.getCurrentUserId();
 			System.out.println("here" + userId);
-			if (userId == null) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-						.body(Map.of("error", "No user ID in session", "redirect", "/auth/login"));
-			}
-
+			
 			// Get user details from service
 			User user = userService.getUserById(userId);
 			if (user == null) {
@@ -93,23 +84,14 @@ public class UserController {
 		}
 	}
 
-// Edit user profile except password
+	// Edit user profile except password
 	@PutMapping("/updateprofile")
-	public ResponseEntity<?> updateUserProfile(@RequestBody Map<String, Object> profileData, HttpSession session) {
+	public ResponseEntity<?> updateUserProfile(@RequestBody Map<String, Object> profileData) {
 		// Check if user is logged in
-		if (!SessionUtil.isValidSession(session)) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-					.body(Map.of("error", "Unauthorized access", "redirect", "/auth/login"));
-		}
-
+		
 		try {
-			// Get userId from session
-			Integer userId = (Integer) session.getAttribute("userId");
-			if (userId == null) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-						.body(Map.of("error", "No user ID in session", "redirect", "/auth/login"));
-			}
-
+			int userId = securityUtils.getCurrentUserId();
+			
 			// Update user profile
 			boolean updated = userService.updateUserProfile(userId, profileData);
 			if (updated) {
@@ -123,7 +105,7 @@ public class UserController {
 				userProfile.put("email", updatedUser.getEmail());
 				userProfile.put("phone", updatedUser.getContact());
 				userProfile.put("address", updatedUser.getAddress());
-//                userProfile.put("createdAt", updatedUser.getCreatedAt());
+				// userProfile.put("createdAt", updatedUser.getCreatedAt());
 
 				return ResponseEntity.ok(userProfile);
 			} else {
@@ -140,46 +122,11 @@ public class UserController {
 		return ("register");
 	}
 
-	@GetMapping("/userdashboard")
-	public String showDashboardPage(ModelMap model, HttpSession session) {
-		User.Role role = (Role) session.getAttribute("role");
-		if (!SessionUtil.isValidSession(session) || role.equals(Role.ADMIN) || role.equals(Role.SUPER_ADMIN)) {
-			return "redirect:/clickshop/auth/login";
-		} else if (role.equals(Role.USER)) {
-			return "userDashboard";
-		}
-		return "redirect:/clickshop/auth/login";
-	}
-
-	@GetMapping("/changepassword")
-	public String showPasswordPage(ModelMap model, HttpSession session) {
-		User.Role role = (Role) session.getAttribute("role");
-		if (!SessionUtil.isValidSession(session) || role.equals(Role.ADMIN) || role.equals(Role.SUPER_ADMIN)) {
-			return "redirect:/clickshop/auth/login";
-		} else if (role.equals(Role.USER)) {
-			return "changePassword";
-		}
-		return "redirect:/clickshop/auth/login";
-	}
-
-	@GetMapping("/usercart")
-	public String showCartPage(ModelMap model, HttpSession session) {
-
-		User.Role role = (Role) session.getAttribute("role");
-		if (!SessionUtil.isValidSession(session) || role.equals(Role.ADMIN) || role.equals(Role.SUPER_ADMIN)) {
-			return "redirect:/clickshop/auth/login";
-		} else if (role.equals(Role.USER)) {
-			int uid = (int) session.getAttribute("userId");
-			List<Map<String, Object>> cartItems = cartService.getCartItemsByUserId(uid);
-			model.addAttribute("cartItems", cartItems);
-			return ("viewCart");
-		}
-		return "redirect:/clickshop/auth/login";
-	}
 
 	@GetMapping("/products")
-	public ResponseEntity<?> getProducts(HttpServletRequest request, HttpSession session) {
-		User.Role role = (User.Role) session.getAttribute("role");
+	public ResponseEntity<?> getProducts(HttpServletRequest request) {
+		
+		User.Role role = securityUtils.getCurrentUserRole();
 
 		if (role == null || role.equals(User.Role.USER)) {
 			List<Product> products = productService.getAllProducts();
@@ -199,18 +146,10 @@ public class UserController {
 	@PutMapping("/changepassword")
 	public ResponseEntity<String> updatePassword(
 
-			@RequestParam String oldPassword, @RequestParam String newPassword, HttpSession session) {
+		@RequestParam String oldPassword, @RequestParam String newPassword) {
 
-		if (!SessionUtil.isValidSession(session)) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated. Please log in.");
-		}
-
-		Integer uid = (Integer) session.getAttribute("userId");
-		System.out.println(uid);
-		if (uid == null) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated. Please log in.");
-		}
-
+		int uid = securityUtils.getCurrentUserId();
+		
 		try {
 			boolean isUpdated = userService.updateUser(uid, oldPassword, newPassword);
 			if (isUpdated) {
@@ -225,13 +164,11 @@ public class UserController {
 	}
 
 	@GetMapping(value = "/vieworders", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<List<OrderItem>> getOrderHistory(HttpSession session) {
+	@ResponseBody
+	public ResponseEntity<List<OrderItem>> getOrderHistory() {
 		try {
-			Integer uid = (Integer) session.getAttribute("userId");
-			if (uid == null) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
-
+			int uid = securityUtils.getCurrentUserId();
+			
 			List<OrderItem> orders = orderService.getOrderHistoryByUserId(uid);
 			System.out.println(orders.toString());
 			return ResponseEntity.ok(orders);
@@ -242,23 +179,14 @@ public class UserController {
 
 	@GetMapping(value = "/cartitems", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public ResponseEntity<List<Map<String, Object>>> getCartItem(HttpSession session) {
-		int uid = (int) session.getAttribute("userId");
-		System.out.println(uid);
-		List<Map<String, Object>> cartItems = cartService.getCartItemsByUserId(uid);
-//    	System.out.println(cartItems);
+	public ResponseEntity<List<Map<String, Object>>> getCartItem(HttpServletRequest request) {
+		// Get the authenticated user from the security c
+		int userId = securityUtils.getCurrentUserId();
+
+		System.out.println("User ID from JWT: " + userId);
+
+		List<Map<String, Object>> cartItems = cartService.getCartItemsByUserId(userId);
 		return ResponseEntity.ok(cartItems);
-	}
-
-	@GetMapping("/checkout")
-	public ResponseEntity<String> checkout(HttpSession session) {
-		int userId = (int) session.getAttribute("userId");
-		System.out.println("User ID during checkout: " + userId);
-
-		String resp = orderService.checkout(userId);
-		System.out.println("Checkout response: " + resp); // Log the actual response string
-
-		return ResponseEntity.ok(resp); // Return the response as plain text
 	}
 
 	@DeleteMapping("/delete")

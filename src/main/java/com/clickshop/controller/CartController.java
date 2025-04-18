@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.clickshop.security.SecurityUtils;
 import com.clickshop.service.CartService;
 
-import jakarta.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("/cart")
@@ -26,16 +26,14 @@ public class CartController {
 	@Autowired
 	private CartService cartService;
 
+	@Autowired
+	private SecurityUtils securityUtils;
+
 	@PostMapping("/add")
-	public ResponseEntity<Map<String, String>> addToCart(@RequestBody Map<String, Object> payload,
-			HttpSession session) {
+	public ResponseEntity<Map<String, String>> addToCart(@RequestBody Map<String, Object> payload) {
 		try {
-			System.out.println(payload);
-			Integer userId = (Integer) session.getAttribute("userId");
-			if (userId == null) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-						.body(Map.of("message", "Please login to add items to cart"));
-			}
+			int userId = securityUtils.getCurrentUserId();
+			
 			int productId = (int) payload.get("productId");
 			int quantity = (int) payload.get("quantity");
 
@@ -58,13 +56,10 @@ public class CartController {
 	}
 
 	@DeleteMapping("/clear")
-	public ResponseEntity<Map<String, String>> clearCart(HttpSession session) {
+	public ResponseEntity<Map<String, String>> clearCart() {
 		try {
-			Integer userId = (Integer) session.getAttribute("userId");
-			if (userId == null) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-						.body(Map.of("message", "Please login first"));
-			}
+			int userId = securityUtils.getCurrentUserId();
+			
 			cartService.clearCart(userId);
 			return ResponseEntity.ok(Map.of("message", "Cart cleared successfully."));
 		} catch (Exception e) {

@@ -13,10 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.clickshop.entity.User;
+import com.clickshop.security.SecurityUtils;
 import com.clickshop.service.PaymentService;
 import com.clickshop.service.UserService;
-
-import jakarta.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("/payments")
@@ -24,6 +23,9 @@ public class PaymentController {
     
     @Autowired
     private PaymentService paymentService;
+
+    @Autowired
+    private SecurityUtils securityUtils;
     
     @Autowired
     private UserService userService;
@@ -58,13 +60,9 @@ public class PaymentController {
     }
 
     @PostMapping("/create-order")
-    public ResponseEntity<?> createOrder(@RequestBody Map<String, Object> orderRequest, HttpSession session) {
+    public ResponseEntity<?> createOrder(@RequestBody Map<String, Object> orderRequest) {
         // Check if user is logged in
-        Integer userId = (Integer) session.getAttribute("userId");
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("message", "Please login to proceed with payment"));
-        }
+        int userId = securityUtils.getCurrentUserId();
         
         try {
             User user = userService.getUserById(userId);
@@ -86,13 +84,8 @@ public class PaymentController {
     }
 
     @PostMapping("/verify-payment")
-    public ResponseEntity<?> verifyPayment(@RequestBody Map<String, String> paymentData, HttpSession session) {
+    public ResponseEntity<?> verifyPayment(@RequestBody Map<String, String> paymentData) {
         // Check if user is logged in
-        Integer userId = (Integer) session.getAttribute("userId");
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("message", "Please login to verify payment"));
-        }
         
         try {
             boolean isVerified = paymentService.verifyRazorpayPayment(paymentData);

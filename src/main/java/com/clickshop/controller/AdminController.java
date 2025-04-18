@@ -22,13 +22,11 @@ import com.clickshop.entity.OrderItem;
 import com.clickshop.entity.Product;
 import com.clickshop.entity.User;
 import com.clickshop.entity.User.Role;
+import com.clickshop.security.SecurityUtils;
 import com.clickshop.service.AdminService;
 import com.clickshop.service.OrderService;
 import com.clickshop.service.ProductService;
 import com.clickshop.service.UserService;
-import com.clickshop.utils.SessionUtil;
-
-import jakarta.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("/admin")
@@ -45,39 +43,11 @@ public class AdminController {
 	@Autowired
 	private OrderService orderService;
 
-	@GetMapping("/dashboard") // Handles GET request for the login page
-	public String showDashboardPage(ModelMap model, HttpSession session) {
-		User.Role role = (Role) session.getAttribute("role");
-		if (!SessionUtil.isValidSession(session)) {
-			return "redirect:/clickshop/auth/login";
-		} else if (role.equals(Role.ADMIN) || role.equals(Role.SUPER_ADMIN)) {
-			return "adminDashboard";
-		} else
-			return "redirect:/clickshop/users/userdashboard";
-	}
-
-	@GetMapping("/addproduct")
-	public String showAddPage(ModelMap model, HttpSession session) {
-
-		User.Role role = (Role) session.getAttribute("role");
-		if (!SessionUtil.isValidSession(session) || role.equals(Role.USER)) {
-			return "redirect:/clickshop/auth/login";
-		} else if (role.equals(Role.ADMIN) || role.equals(Role.SUPER_ADMIN)) {
-			return "addProduct";
-		}
-		return "redirect:/clickshop/auth/login";
-	}
+	@Autowired
+	private SecurityUtils securityUtils;
 
 	@GetMapping("/viewproducts")
-	public ResponseEntity<?> getAllProducts(HttpSession session) {
-        User.Role role = (Role) session.getAttribute("role");
-        
-        // Check if user is admin
-        if (!SessionUtil.isValidSession(session) || role == null || 
-            (!role.equals(Role.ADMIN) && !role.equals(Role.SUPER_ADMIN))) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Unauthorized access", "redirect", "/auth/login"));
-        }
+	public ResponseEntity<?> getAllProducts() {
         
         try {
             List<Product> products = productService.getAllProducts();
@@ -90,16 +60,8 @@ public class AdminController {
     }
 
 	@GetMapping("/viewusers")
-	public ResponseEntity<?> getAllUsers(HttpSession session) {
-		User.Role role = (Role) session.getAttribute("role");
-
-		// Check if user is admin
-		if (!SessionUtil.isValidSession(session) || role == null
-				|| (!role.equals(Role.ADMIN) && !role.equals(Role.SUPER_ADMIN))) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-					.body(Map.of("error", "Unauthorized access", "redirect", "/auth/login"));
-		}
-
+	public ResponseEntity<?> getAllUsers() {
+		
 		try {
 			List<User> users = userService.getAllUsers();
 
@@ -144,16 +106,8 @@ public class AdminController {
 	}
 
 	@GetMapping("/viewadmins")
-	public ResponseEntity<?> getAdminUsers(HttpSession session) {
-		User.Role role = (Role) session.getAttribute("role");
-
-		// Check if user is admin
-		if (!SessionUtil.isValidSession(session) || role == null
-				|| (!role.equals(Role.ADMIN) && !role.equals(Role.SUPER_ADMIN))) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-					.body(Map.of("error", "Unauthorized access", "redirect", "/auth/login"));
-		}
-
+	public ResponseEntity<?> getAdminUsers() {
+		
 		try {
 			List<User> allUsers = userService.getAllUsers();
 			List<User> adminUsers = new ArrayList<>();

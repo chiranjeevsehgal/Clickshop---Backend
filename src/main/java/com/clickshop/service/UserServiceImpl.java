@@ -7,8 +7,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.clickshop.entity.User;
@@ -31,19 +31,20 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	AdminRepository adminRepository;
 
-	Scanner sc = new Scanner(System.in);
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	@Override
 	public boolean addUserService(User user) {
 		// TODO Auto-generated method stub
 
 		if (userRepository.existsById((user.getId()))) {
-//			System.out.println("Employee with id " + emp.getEno() + " already exists");
+			// System.out.println("Employee with id " + emp.getEno() + " already exists");
 			return false;
 		}
 		if (user.getRole() == null) {
-	        user.setRole(Role.USER);  // Assign default role if not set
-	    }
+			user.setRole(Role.USER); // Assign default role if not set
+		}
 		User user1 = userRepository.save(user);
 		if (user1 != null)
 			return true;
@@ -51,50 +52,49 @@ public class UserServiceImpl implements UserService {
 			return false;
 		}
 	}
-	
-//	Update profile except password
-	public boolean updateUserProfile(int userId, Map<String, Object> profileData) {
-        try {
-            Optional<User> userOptional = userRepository.findById(userId);
-            if (!userOptional.isPresent()) {
-                return false;
-            }
-            
-            User user = userOptional.get();
-            
-            // Update fields if provided
-            if (profileData.containsKey("name")) {
-                user.setName((String) profileData.get("name"));
-            }
-            
-            if (profileData.containsKey("phone")) {
-                user.setContact((String) profileData.get("phone"));
-            }
-            
-            if (profileData.containsKey("address")) {
-                user.setAddress((String) profileData.get("address"));
-            }
-            
-            // Email updates might need additional verification
-            if (profileData.containsKey("email")) {
-                String newEmail = (String) profileData.get("email");
-                // Check if email is already in use by another user
-                User existingUser = userRepository.findByEmail(newEmail);
-                if (existingUser != null && existingUser.getId() != userId) {
-                    return false; // Email already in use
-                }
-                user.setEmail(newEmail);
-            }
-            
-            // Save updated user
-            userRepository.save(user);
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
 
+	// Update profile except password
+	public boolean updateUserProfile(int userId, Map<String, Object> profileData) {
+		try {
+			Optional<User> userOptional = userRepository.findById(userId);
+			if (!userOptional.isPresent()) {
+				return false;
+			}
+
+			User user = userOptional.get();
+
+			// Update fields if provided
+			if (profileData.containsKey("name")) {
+				user.setName((String) profileData.get("name"));
+			}
+
+			if (profileData.containsKey("phone")) {
+				user.setContact((String) profileData.get("phone"));
+			}
+
+			if (profileData.containsKey("address")) {
+				user.setAddress((String) profileData.get("address"));
+			}
+
+			// Email updates might need additional verification
+			if (profileData.containsKey("email")) {
+				String newEmail = (String) profileData.get("email");
+				// Check if email is already in use by another user
+				User existingUser = userRepository.findByEmail(newEmail);
+				if (existingUser != null && existingUser.getId() != userId) {
+					return false; // Email already in use
+				}
+				user.setEmail(newEmail);
+			}
+
+			// Save updated user
+			userRepository.save(user);
+			return true;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
 
 	@Override
 	public boolean updateUser(int userId, String oldPassword, String newPassword) {
@@ -134,9 +134,8 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public User loginUser(String uname, String password) {
-		// TODO Auto-generated method stub
 		User user = userRepository.findByUname(uname);
-		if (user != null && user.getPassword().equals(password)) {
+		if (user != null && passwordEncoder.matches(password, user.getPassword())) {
 			if (user.getRole().equals(Role.ADMIN) || user.getRole().equals(Role.SUPER_ADMIN)) {
 				user.setAdmin(true);
 			} else {
@@ -161,12 +160,12 @@ public class UserServiceImpl implements UserService {
 	public User getUserByEmail(String email) {
 		return userRepository.findByEmail(email);
 	}
-	
+
 	@Override
 	public User getUserById(int userId) {
-	        Optional<User> userOptional = userRepository.findById(userId);
-	        return userOptional.orElse(null);
-	    }
+		Optional<User> userOptional = userRepository.findById(userId);
+		return userOptional.orElse(null);
+	}
 
 	@Override
 	public ArrayList<User> getAllUsers() {
@@ -181,14 +180,14 @@ public class UserServiceImpl implements UserService {
 		// TODO Auto-generated method stub
 		return adminRepository.isAdmin(userId);
 	}
-	
+
 	@Override
 	public void updateUserStatus(int id, User.Status status) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        user.setStatus(status);
-        userRepository.save(user);
-    }
+		User user = userRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("User not found"));
+		user.setStatus(status);
+		userRepository.save(user);
+	}
 
 	public List<User> getAllAdmins() {
 		List<User> admins = userRepository.findByRoleIn(Arrays.asList(User.Role.ADMIN, User.Role.SUPER_ADMIN));

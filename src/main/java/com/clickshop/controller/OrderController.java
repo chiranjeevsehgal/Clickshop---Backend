@@ -18,13 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.clickshop.entity.OrderItem;
 import com.clickshop.entity.User;
-import com.clickshop.entity.User.Role;
+import com.clickshop.security.SecurityUtils;
 import com.clickshop.service.CartService;
 import com.clickshop.service.OrderService;
 import com.clickshop.service.UserService;
-import com.clickshop.utils.SessionUtil;
-
-import jakarta.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("/orders")
@@ -40,16 +37,11 @@ public class OrderController {
 	@Autowired
 	private CartService cartService;
 
+	@Autowired
+	private SecurityUtils securityUtils;
+
 	@GetMapping("/all")
-    public ResponseEntity<?> getAllOrders(HttpSession session) {
-        User.Role role = (Role) session.getAttribute("role");
-        
-        // Check if user is admin
-        if (!SessionUtil.isValidSession(session) || role == null || 
-            (!role.equals(Role.ADMIN) && !role.equals(Role.SUPER_ADMIN))) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", "Unauthorized access", "redirect", "/auth/login"));
-        }
+    public ResponseEntity<?> getAllOrders() {
         
         try {
             List<OrderItem> orders = orderService.getAllOrders();
@@ -62,16 +54,10 @@ public class OrderController {
     }
 	
 	@GetMapping("/{id}")
-	public ResponseEntity<?> getOrderById(@PathVariable int id, HttpSession session) {
-	    User.Role role = (Role) session.getAttribute("role");
-
-	    if (!SessionUtil.isValidSession(session) || role == null ||
-	        (!role.equals(Role.ADMIN) && !role.equals(Role.SUPER_ADMIN))) {
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-	                .body(Map.of("error", "Unauthorized access", "redirect", "/auth/login"));
-	    }
-
+	public ResponseEntity<?> getOrderById(@PathVariable int id) {
+	
 	    try {
+			
 	        OrderItem order = orderService.getOrderById(id);
 	        User customer = order.getUser();
 	        Map<String, Object> response = new HashMap<>();
@@ -93,17 +79,9 @@ public class OrderController {
 	@PutMapping("/{orderId}/status")
 	public ResponseEntity<?> updateOrderStatus(
 	        @PathVariable int orderId,
-	        @RequestBody Map<String, String> statusUpdate,
-	        HttpSession session) {
-	    User.Role role = (Role) session.getAttribute("role");
-	    
-	    // Check if user is admin
-	    if (!SessionUtil.isValidSession(session) || role == null || 
-	        (!role.equals(Role.ADMIN) && !role.equals(Role.SUPER_ADMIN))) {
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-	                .body(Map.of("error", "Unauthorized access", "redirect", "/auth/login"));
-	    }
-	    
+	        @RequestBody Map<String, String> statusUpdate
+	        ) {
+
 	    try {
 	        String newStatus = statusUpdate.get("status");
 	        if (newStatus == null || newStatus.isEmpty()) {
@@ -130,15 +108,7 @@ public class OrderController {
 	 * Cancel an order item
 	 */
 	@PutMapping("/{orderId}/cancel")
-	public ResponseEntity<?> cancelOrder(@PathVariable int orderId, HttpSession session) {
-	    User.Role role = (Role) session.getAttribute("role");
-	    
-	    // Check if user is admin
-	    if (!SessionUtil.isValidSession(session) || role == null || 
-	        (!role.equals(Role.ADMIN) && !role.equals(Role.SUPER_ADMIN))) {
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-	                .body(Map.of("error", "Unauthorized access", "redirect", "/auth/login"));
-	    }
+	public ResponseEntity<?> cancelOrder(@PathVariable int orderId) {
 	    
 	    try {
 	        boolean cancelled = orderService.cancelOrder(orderId);
@@ -162,17 +132,8 @@ public class OrderController {
 	 */
 	@GetMapping("/status/{status}")
 	public ResponseEntity<?> getOrdersByStatus(
-	        @PathVariable String status,
-	        HttpSession session) {
-	    User.Role role = (Role) session.getAttribute("role");
-	    
-	    // Check if user is admin
-	    if (!SessionUtil.isValidSession(session) || role == null || 
-	        (!role.equals(Role.ADMIN) && !role.equals(Role.SUPER_ADMIN))) {
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-	                .body(Map.of("error", "Unauthorized access", "redirect", "/auth/login"));
-	    }
-	    
+	        @PathVariable String status) {
+	  
 	    try {
 	        List<OrderItem> orders = orderService.getOrdersByStatus(status);
 	        return ResponseEntity.ok(orders);
@@ -186,13 +147,9 @@ public class OrderController {
 	}
 
 	@PostMapping("/create")
-    public ResponseEntity<?> createOrder(@RequestBody Map<String, Object> orderRequest, HttpSession session) {
+    public ResponseEntity<?> createOrder(@RequestBody Map<String, Object> orderRequest) {
         // Check if user is logged in
-        Integer userId = (Integer) session.getAttribute("userId");
-        if (userId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("message", "Please login to create an order"));
-        }
+        int userId = securityUtils.getCurrentUserId();
         
         try {
             User user = userService.getUserById(userId);
@@ -212,14 +169,10 @@ public class OrderController {
     }
 
 	@PostMapping("/save")
-	public ResponseEntity<?> saveOrder(@RequestBody Map<String, Object> orderData, HttpSession session) {
+	public ResponseEntity<?> saveOrder(@RequestBody Map<String, Object> orderData) {
 	    // Check if user is logged in
-	    Integer userId = (Integer) session.getAttribute("userId");
-	    if (userId == null) {
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-	                .body(Map.of("message", "Please login to save an order"));
-	    }
-
+	    int userId = securityUtils.getCurrentUserId();
+	
 	    try {
 	        User user = userService.getUserById(userId);
 	        if (user == null) {

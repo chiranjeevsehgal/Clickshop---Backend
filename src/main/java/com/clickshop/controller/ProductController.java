@@ -19,16 +19,17 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.clickshop.entity.Product;
 import com.clickshop.entity.User;
+import com.clickshop.security.SecurityUtils;
 import com.clickshop.service.ProductService;
-import com.clickshop.utils.SessionUtil;
-
-import jakarta.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("/product")
 public class ProductController {
 	@Autowired
 	private ProductService productService;
+
+	@Autowired
+	private SecurityUtils securityUtils;
 
 	@PostMapping("/add")
 	@ResponseBody
@@ -88,8 +89,8 @@ public class ProductController {
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<?> getProductById(@PathVariable("id") int id, HttpSession session) {
-		User.Role role = (User.Role) session.getAttribute("role");
+	public ResponseEntity<?> getProductById(@PathVariable("id") int id) {
+		User.Role role = securityUtils.getCurrentUserRole();
 
 		if (role == null || role.equals(User.Role.USER)) {
 			try {
@@ -101,24 +102,13 @@ public class ProductController {
 			}
 		}
 
-		// For logged in users
-		if (!SessionUtil.isValidSession(session) || role.equals(User.Role.ADMIN) || role.equals(User.Role.SUPER_ADMIN)) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-					.body(Map.of("error", "Unauthorized access"));
-		}
 
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 				.body(Map.of("error", "Authentication required", "redirect", "/clickshop/auth/login"));
 	}
 
 	@GetMapping("/category/{category}")
-	public ResponseEntity<?> getProductsByCategory(@PathVariable String category, HttpSession session) {
-		User.Role role = (User.Role) session.getAttribute("role");
-
-		if (!SessionUtil.isValidSession(session) || !role.equals(User.Role.USER)) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-					.body(Map.of("error", "Unauthorized access"));
-		}
+	public ResponseEntity<?> getProductsByCategory(@PathVariable String category) {
 
 		// List<Product> products = productService.getProductsByCategory(category);
 		List<Product> products = null;
@@ -126,14 +116,7 @@ public class ProductController {
 	}
 
 	@GetMapping("/products/search")
-	public ResponseEntity<?> searchProducts(@RequestParam("term") String searchTerm, HttpSession session) {
-		User.Role role = (User.Role) session.getAttribute("role");
-
-		if (!SessionUtil.isValidSession(session) || !role.equals(User.Role.USER)) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-					.body(Map.of("error", "Unauthorized access"));
-		}
-
+	public ResponseEntity<?> searchProducts(@RequestParam("term") String searchTerm) {
 		// List<Product> products = productService.searchProducts(searchTerm);
 		List<Product> products = null;
 		return ResponseEntity.ok(products);
