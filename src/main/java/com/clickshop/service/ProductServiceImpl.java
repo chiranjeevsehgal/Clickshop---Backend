@@ -1,10 +1,14 @@
 package com.clickshop.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.clickshop.entity.Product;
@@ -77,10 +81,21 @@ public class ProductServiceImpl implements ProductService {
 		productRepository.findAll().forEach(product -> productList.add(product));
 		return productList;
 	}
+	
+	
+	public boolean reduceStock(int productId, int quantity) {
+		Product product = productRepository.findById(productId).orElse(null);
+		if (product == null || product.getStock() < quantity) {
+			return false;
+		}
+		
+		product.setStock(product.getStock() - quantity);
+		productRepository.save(product);
+		return true;
+	}
 
 	@Override
 	public Product getProductByIdService(int pid) {
-		// TODO Auto-generated method stub
 		return productRepository.findById(pid).get();
 	}
 }

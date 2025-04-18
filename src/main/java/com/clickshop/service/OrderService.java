@@ -16,7 +16,7 @@ public interface OrderService {
 	public OrderItem getOrderById(int id);
 	public boolean updateOrderStatus(int orderId, String newStatus);
 	public List<OrderItem> getOrdersByStatus(String status);
-	public boolean cancelOrder(int orderId) ;
+	public boolean cancelOrder(int orderId);
 	public Map<String, Object> prepareOrder(Map<String, Object> orderRequest, User user);
 	public List<OrderItem> saveOrder(Map<String, Object> orderData, User user) ;
 	

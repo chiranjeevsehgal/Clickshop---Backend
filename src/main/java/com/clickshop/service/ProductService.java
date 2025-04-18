@@ -14,4 +14,6 @@ public interface ProductService {
 	public List<Product> getAllProducts();
 
 	public Product getProductByIdService(int pid);
+
+	public boolean reduceStock(int productId, int quantity) ;
 }

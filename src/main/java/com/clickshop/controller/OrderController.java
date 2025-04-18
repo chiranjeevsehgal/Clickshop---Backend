@@ -108,24 +108,27 @@ public class OrderController {
 	 * Cancel an order item
 	 */
 	@PutMapping("/{orderId}/cancel")
-	public ResponseEntity<?> cancelOrder(@PathVariable int orderId) {
-	    
-	    try {
-	        boolean cancelled = orderService.cancelOrder(orderId);
-	        if (cancelled) {
-	            return ResponseEntity.ok(Map.of("message", "Order cancelled successfully"));
-	        } else {
-	            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-	                    .body(Map.of("error", "Order not found or cancellation failed"));
-	        }
-	    } catch (IllegalStateException e) {
-	        return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-	                .body(Map.of("error", "Failed to cancel order: " + e.getMessage()));
-	    }
-	}
+    public ResponseEntity<?> cancelOrder(@PathVariable int orderId) {
+        try {
+            boolean cancelled = orderService.cancelOrder(orderId);
+            if (cancelled) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("message", "Order cancelled successfully");
+                return ResponseEntity.ok(response);
+            } else {
+                Map<String, Object> errorResponse = new HashMap<>();
+                errorResponse.put("success", false);
+                errorResponse.put("message", "Order cannot be cancelled. It may be already shipped or delivered.");
+                return ResponseEntity.badRequest().body(errorResponse);
+            }
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
 
 	/**
 	 * Get orders by status

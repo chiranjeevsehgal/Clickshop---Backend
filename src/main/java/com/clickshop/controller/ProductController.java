@@ -1,5 +1,6 @@
 package com.clickshop.controller;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -92,12 +93,39 @@ public class ProductController {
 	public ResponseEntity<?> getProductById(@PathVariable("id") int id) {
 
 		try {
-				Product product = productService.getProductByIdService(id);
-				return ResponseEntity.ok(product);
-			} catch (Exception e) {
-				return ResponseEntity.status(HttpStatus.NOT_FOUND)
-						.body(Map.of("error", "Product not found"));
+			Product product = productService.getProductByIdService(id);
+			return ResponseEntity.ok(product);
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND)
+					.body(Map.of("error", "Product not found"));
+		}
+	}
+
+	@PostMapping("/{productId}/reduce-stock")
+	public ResponseEntity<?> reduceStock(@PathVariable int productId, @RequestBody Map<String, Integer> request) {
+		Integer quantity = request.get("quantity");
+		if (quantity == null || quantity <= 0) {
+			Map<String, String> errorResponse = new HashMap<>();
+			errorResponse.put("error", "Invalid quantity");
+			return ResponseEntity.badRequest().body(errorResponse);
+		}
+
+		try {
+			boolean success = productService.reduceStock(productId, quantity);
+			if (success) {
+				Map<String, String> successResponse = new HashMap<>();
+				successResponse.put("message", "Stock updated successfully");
+				return ResponseEntity.ok().body(successResponse);
+			} else {
+				Map<String, String> errorResponse = new HashMap<>();
+				errorResponse.put("error", "Failed to update stock");
+				return ResponseEntity.badRequest().body(errorResponse);
 			}
+		} catch (Exception e) {
+			Map<String, String> errorResponse = new HashMap<>();
+			errorResponse.put("error", e.getMessage());
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+		}
 	}
 
 	@GetMapping("/category/{category}")
