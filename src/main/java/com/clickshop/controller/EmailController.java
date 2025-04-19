@@ -30,8 +30,15 @@ public class EmailController {
 	@Value("${mailtrap.template.order-confirmation-admin}")
 	private String orderTemplateUuidAdmin;
 
+	@Value("${mailtrap.template.otp-verification}")
+	private String otpTemplateUuid;
+
+
 	@Value("${mailtrap.from.email}")
 	private String fromEmail;
+	
+	@Value("${mailtrap.from.email.authenticate}")
+	private String fromAuthEmail;
 
 	@Value("${mailtrap.from.name}")
 	private String fromName;
@@ -39,7 +46,6 @@ public class EmailController {
 	@Value("${mailtrap.admin.email}")
 	private String adminEmail;
 
-	// Endpoint to send order notification to admin
 
 	@PostMapping("/demo-email")
 	public ResponseEntity<?> sendDemoNotification() {
@@ -49,16 +55,13 @@ public class EmailController {
 							.token(mailtrapToken)
 							.build());
 
-			// Prepare template variables from the received JSON
 			Map<String, Object> variables = new HashMap<>();
 
-			// Extract data from the request body
 			variables.put("user_name", "test");
 			variables.put("order_id", "1");
 			variables.put("delivery_date", "2025-04-17");
 			variables.put("order_total", "12000");
 
-			// Create and send the email
 			MailtrapMail mail = MailtrapMail.builder()
 					.from(new Address(fromEmail, fromName))
 					.to(List.of(new Address(adminEmail)))
@@ -66,7 +69,6 @@ public class EmailController {
 					.templateVariables(variables)
 					.build();
 
-			// Send the email
 			String response = client.send(mail).toString();
 
 			return ResponseEntity.ok(Map.of(
@@ -82,6 +84,53 @@ public class EmailController {
 					"error", e.getMessage()));
 		}
 	}
+
+	@PostMapping("/send-otp")
+	public ResponseEntity<?> sendOtpEmail(@RequestBody Map<String, Object> otpData) {
+		try {
+			MailtrapClient client = MailtrapClientFactory.createMailtrapClient(
+					new MailtrapConfig.Builder()
+							.token(mailtrapToken)
+							.build());
+			
+			String email = (String) otpData.get("email");
+			String userName = (String) otpData.get("user_name");
+			String otpCode = (String) otpData.get("otp_code");
+			Integer expiryMinutes = (Integer) otpData.get("expiry_minutes");
+
+			if (email == null || email.trim().isEmpty()) {
+				return ResponseEntity.badRequest().body(Map.of(
+						"success", false,
+						"message", "Email is required"));
+			}
+
+			Map<String, Object> variables = new HashMap<>();
+			variables.put("user_name", userName != null ? userName : "User");
+			variables.put("otp_code", otpCode);
+			variables.put("expiry_minutes", expiryMinutes != null ? expiryMinutes : 10);
+
+			MailtrapMail mail = MailtrapMail.builder()
+					.from(new Address(fromAuthEmail, fromName))
+					.to(List.of(new Address(email)))
+					.templateUuid(otpTemplateUuid)
+					.templateVariables(variables)
+					.build();
+
+			String response = client.send(mail).toString();
+
+			return ResponseEntity.ok(Map.of(
+					"success", true,
+					"message", "OTP sent successfully",
+					"details", response));
+
+		} catch (Exception e) {
+			return ResponseEntity.internalServerError().body(Map.of(
+					"success", false,
+					"message", "Failed to send OTP email",
+					"error", e.getMessage()));
+		}
+	}
+
 
 	@PostMapping("/send-admin-notification")
 	public ResponseEntity<?> sendOrderNotification(@RequestBody Map<String, Object> orderData) {

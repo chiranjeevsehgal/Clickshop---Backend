@@ -1,8 +1,11 @@
 package com.clickshop.controller;
 
 import java.io.IOException;
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,6 +40,10 @@ import com.clickshop.service.UserService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.mailtrap.client.MailtrapClient;
+import io.mailtrap.config.MailtrapConfig;
+import io.mailtrap.factory.MailtrapClientFactory;
+import io.mailtrap.model.request.emails.MailtrapMail;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -44,6 +51,8 @@ import jakarta.servlet.http.HttpSession;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
+
+    private final EmailController emailController;
 
     @Autowired
     private UserService userService;
@@ -74,6 +83,14 @@ public class AuthController {
 
     @Value("${spring.security.oauth2.client.registration.google.redirect-uri}")
     private String redirectUri;
+
+    private final Map<String, Map<String, Object>> otpStorage = new ConcurrentHashMap<>();
+
+    private static final int OTP_VALID_DURATION = 10;
+
+    AuthController(EmailController emailController) {
+        this.emailController = emailController;
+    }
 
     // Add a new user
     @PostMapping("/register")
@@ -394,6 +411,98 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                     "message", "Login failed: " + e.getMessage()));
         }
+    }
+
+    @PostMapping("/send-otp")
+    public ResponseEntity<?> sendOtp(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String name = request.get("name");
+
+        if (email == null || email.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "Email is required"));
+        }
+
+        try {
+            // Generate a 6-digit OTP
+            String otp = generateOTP(6);
+
+            LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(OTP_VALID_DURATION);
+            Map<String, Object> otpData = new HashMap<>();
+            otpData.put("otp", otp);
+            otpData.put("expiry", expiryTime);
+            otpStorage.put(email, otpData);
+
+            Map<String, Object> emailData = new HashMap<>();
+            emailData.put("email", email);
+            emailData.put("user_name", name != null ? name : "User");
+            emailData.put("otp_code", otp);
+            emailData.put("expiry_minutes", OTP_VALID_DURATION);
+
+            return emailController.sendOtpEmail(emailData);
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of(
+                    "success", false,
+                    "message", "Failed to send OTP",
+                    "error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<?> verifyOtp(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String otp = request.get("otp");
+
+        if (email == null || email.trim().isEmpty() || otp == null || otp.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "Email and OTP are required"));
+        }
+
+        Map<String, Object> otpData = otpStorage.get(email);
+
+        if (otpData == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                    "success", false,
+                    "message", "No OTP found for this email. Please request a new OTP."));
+        }
+
+        String storedOtp = (String) otpData.get("otp");
+        LocalDateTime expiryTime = (LocalDateTime) otpData.get("expiry");
+
+        if (LocalDateTime.now().isAfter(expiryTime)) {
+            otpStorage.remove(email);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                    "success", false,
+                    "message", "OTP has expired. Please request a new OTP."));
+        }
+
+        if (!otp.equals(storedOtp)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                    "success", false,
+                    "message", "Invalid OTP. Please try again."));
+        }
+
+        otpStorage.remove(email);
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Email verified successfully"));
+    }
+
+    private String generateOTP(int length) {
+        String digits = "0123456789";
+
+        SecureRandom random = new SecureRandom();
+        StringBuilder otp = new StringBuilder(length);
+
+        for (int i = 0; i < length; i++) {
+            otp.append(digits.charAt(random.nextInt(digits.length())));
+        }
+
+        return otp.toString();
     }
 
     @GetMapping("/logout")
