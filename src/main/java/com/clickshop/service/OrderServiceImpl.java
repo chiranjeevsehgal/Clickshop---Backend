@@ -228,7 +228,8 @@ public class OrderServiceImpl implements OrderService {
             if (items == null || items.isEmpty()) {
                 throw new RuntimeException("No items found in order");
             }
-
+            System.out.println("In order save");
+            System.out.println(orderData);
             List<OrderItem> savedOrders = new ArrayList<>();
             SimpleDateFormat formatter = new SimpleDateFormat("MMM dd, yyyy");
             Date currentDate = new Date();
@@ -271,12 +272,15 @@ public class OrderServiceImpl implements OrderService {
                 // double totalAmount = getDoubleValue(orderData, "amount");
                 double shippingTotal = 99.0;
                 double discountTotal = 0;
+                double discountRate = 0;
                 discountTotal = getDoubleValue(orderData, "discount");
+                discountRate = getDoubleValue(orderData, "discountRate");
+
                 order.setShipping(shippingTotal);
                 
                 if (discountTotal != 0) {
                     // Calculate proportional shipping and discount based on item's share of total
-                    order.setDiscount(discountTotal);
+                    order.setDiscount(itemSubtotal*discountRate);
                 } else {
                     order.setDiscount(0.0);
                 }

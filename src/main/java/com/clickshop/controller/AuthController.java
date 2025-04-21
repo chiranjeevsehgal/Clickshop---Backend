@@ -86,7 +86,7 @@ public class AuthController {
 
     private final Map<String, Map<String, Object>> otpStorage = new ConcurrentHashMap<>();
 
-    private static final int OTP_VALID_DURATION = 10;
+    private static final int OTP_VALID_DURATION = 2;
 
     AuthController(EmailController emailController) {
         this.emailController = emailController;
@@ -173,6 +173,35 @@ public class AuthController {
     public ResponseEntity<String> testBackend() {
         return ResponseEntity.ok("✅ Backend is working!");
     }
+
+    @GetMapping("/check-email")
+    public ResponseEntity<?> checkEmailExists(@RequestParam String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Email is required",
+                    "exists", false));
+        }
+
+        boolean exists = userService.existsByEmail(email);
+        return ResponseEntity.ok().body(Map.of(
+                "exists", exists,
+                "message", exists ? "Email already registered" : "Email available"));
+    }
+
+    @GetMapping("/check-username")
+    public ResponseEntity<?> checkUsernameExists(@RequestParam String username) {
+        if (username == null || username.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Username is required",
+                    "exists", false));
+        }
+
+        boolean exists = userService.existsByUsername(username);
+        return ResponseEntity.ok().body(Map.of(
+                "exists", exists,
+                "message", exists ? "Username already taken" : "Username available"));
+    }
+
 
     @GetMapping("/oauth2/callback/google")
     public ResponseEntity<?> googleCallback(@RequestParam("code") String code, HttpServletResponse response) {
@@ -454,43 +483,52 @@ public class AuthController {
     public ResponseEntity<?> verifyOtp(@RequestBody Map<String, String> request) {
         String email = request.get("email");
         String otp = request.get("otp");
-
+    
         if (email == null || email.trim().isEmpty() || otp == null || otp.trim().isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
                     "message", "Email and OTP are required"));
         }
-
+    
         Map<String, Object> otpData = otpStorage.get(email);
-
+    
         if (otpData == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+            // Check if the OTP might have expired and been removed by the cleanup process
+            // You could implement a separate expired OTP tracking mechanism here
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
                     "success", false,
-                    "message", "No OTP found for this email. Please request a new OTP."));
+                    "message", "No active OTP found for this email. Please request a new one."));
         }
-
+    
         String storedOtp = (String) otpData.get("otp");
         LocalDateTime expiryTime = (LocalDateTime) otpData.get("expiry");
-
+    
         if (LocalDateTime.now().isAfter(expiryTime)) {
+            // OTP has expired
             otpStorage.remove(email);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
                     "success", false,
-                    "message", "OTP has expired. Please request a new OTP."));
+                    "message", "Your OTP has expired. Please request a new one.",
+                    "errorCode", "OTP_EXPIRED"
+            ));
         }
-
+    
         if (!otp.equals(storedOtp)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
                     "success", false,
-                    "message", "Invalid OTP. Please try again."));
+                    "message", "Invalid OTP. Please try again.",
+                    "errorCode", "INVALID_OTP"
+            ));
         }
-
+    
+        // OTP is valid
         otpStorage.remove(email);
-
+    
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "Email verified successfully"));
     }
+    
 
     private String generateOTP(int length) {
         String digits = "0123456789";

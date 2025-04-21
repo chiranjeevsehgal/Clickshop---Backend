@@ -15,15 +15,20 @@ public class Product {
     @Column(name = "pid")
 	private int id;
 	private String name, description, category;
+
+	@Column(name = "image_url")
+	private String imageUrl;
+
 	private float price;
 	private int stock;
 
-	public Product(String name, float price, String description, int stock, String category) {
+	public Product(String name, float price, String description, int stock, String category, String imageUrl) {
 		this.name = name;
 		this.price = price;
 		this.description = description;
 		this.stock = stock;
 		this.category = category;
+		this.imageUrl = imageUrl;
 	}
 	
 	public Product() {
@@ -80,6 +85,14 @@ public class Product {
 
 	public String toString() {
 		return "ID: " + id + " | " + name + " | Price: " + price + " | Description: " + description + " | Stock: "
-				+ stock + " | Category: " + category;
+				+ stock + " | Category: " + category + " | Image Url: " + imageUrl;
+	}
+
+	public String getImageUrl() {
+		return imageUrl;
+	}
+
+	public void setImageUrl(String imageUrl) {
+		this.imageUrl = imageUrl;
 	}
 }

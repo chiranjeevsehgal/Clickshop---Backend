@@ -34,8 +34,9 @@ public class PaymentServiceImpl implements PaymentService {
         
         // Extract order total
         Map<String, Object> orderSummary = extractOrderSummary(orderRequest);
-        System.out.println("HI");
+        System.out.println("orderRequest");
         System.out.println(orderRequest);
+        System.out.println("orderSummary");
         System.out.println(orderSummary);
         double amount = (double) orderSummary.get("total");
         

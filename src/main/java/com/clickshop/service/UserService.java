@@ -33,4 +33,7 @@ public interface UserService {
 	
 	public void updateUserStatus(int id, User.Status status);
 
+	public boolean existsByEmail(String email);
+	public boolean existsByUsername(String username); 
+
 }

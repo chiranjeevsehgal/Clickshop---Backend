@@ -33,7 +33,7 @@ public class SecurityConfig {
             .csrf().disable()
             .authorizeHttpRequests()
                 .requestMatchers("/auth/**").permitAll()
-                .requestMatchers("/users/**").hasAuthority("ROLE_USER")
+                .requestMatchers("/users/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN","ROLE_SUPER_ADMIN")
                 .requestMatchers("/cart/**").hasAuthority("ROLE_USER")
                 .requestMatchers("/wishlist/**").hasAuthority("ROLE_USER")
                 .requestMatchers("/orders/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN","ROLE_SUPER_ADMIN")
@@ -58,6 +58,7 @@ public class SecurityConfig {
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
+    
     
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

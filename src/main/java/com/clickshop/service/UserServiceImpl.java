@@ -146,6 +146,16 @@ public class UserServiceImpl implements UserService {
 		return null;
 	}
 
+	@Override
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
+    }
+    
+    @Override
+    public boolean existsByUsername(String username) {
+        return userRepository.existsByUname(username);
+    }
+
 	public boolean verifyOldPassword(int userId, String oldPassword) {
 		Optional<User> optionalUser = userRepository.findById(userId);
 		if (optionalUser.isPresent()) {
