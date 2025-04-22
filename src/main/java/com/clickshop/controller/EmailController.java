@@ -33,7 +33,6 @@ public class EmailController {
 	@Value("${mailtrap.template.otp-verification}")
 	private String otpTemplateUuid;
 
-
 	@Value("${mailtrap.from.email}")
 	private String fromEmail;
 	

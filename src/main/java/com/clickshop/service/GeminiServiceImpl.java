@@ -26,7 +26,7 @@ public class GeminiServiceImpl implements GeminiService {
         try {
             System.out.println("Sending request to Gemini API for prompt: ");
             
-            String enhancedPrompt = "You are an e-commerce shopping assistant. Provide concise, relevant product information. Only answer questions related to shopping, products, and e-commerce, if a question is unrelated to e-commerce, politely say that I am not allowed to help on this, keep responses concise and to the point without unnecessary explanations, use bullet points where appropriate, avoid lengthy conclusions and summaries, focus on practical, actionable product recommendations " + prompt;
+            String enhancedPrompt = "You are an e-commerce shopping assistant. Provide concise, relevant product information. Only answer questions related to shopping, products, and e-commerce, if a question is unrelated to e-commerce, politely say that I am not allowed to help on this, keep responses concise and to the point without unnecessary explanations, use bullet points where appropriate, avoid lengthy conclusions and summaries, focus on practical, actionable product recommendations. Give in plain string not markdown or bold and all." + prompt;
             
             RestTemplate restTemplate = new RestTemplate();
             

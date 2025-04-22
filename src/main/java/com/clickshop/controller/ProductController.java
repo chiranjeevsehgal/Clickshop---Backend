@@ -1,10 +1,13 @@
 package com.clickshop.controller;
 
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,8 +21,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.clickshop.entity.OrderItem;
 import com.clickshop.entity.Product;
-import com.clickshop.entity.User;
 import com.clickshop.security.SecurityUtils;
 import com.clickshop.service.ProductService;
 
@@ -65,6 +68,13 @@ public class ProductController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("ERROR");
 		}
 	}
+
+	@GetMapping("/between")
+    public List<Product> getProductsBetweenDates(
+        @RequestParam("startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+        @RequestParam("endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate) {
+    return productService.getProductsBetweenDates(startDate, endDate);
+}
 
 	@PutMapping("/update/{productId}")
 	public ResponseEntity<String> updateProduct(
@@ -128,11 +138,33 @@ public class ProductController {
 		}
 	}
 
+	@GetMapping("/categories")
+    public ResponseEntity<List<String>> getAllCategories() {
+        return ResponseEntity.ok(productService.findAllCategories());
+    }
+
+	@GetMapping
+    public ResponseEntity<List<Product>> getAllProducts(
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Boolean popular,
+            @RequestParam(required = false, defaultValue = "12") Integer limit
+    ) {
+        if (category != null && !category.isEmpty()) {
+            return ResponseEntity.ok(productService.getProductsByCategory(category));
+        } else if (search != null && !search.isEmpty()) {
+            return ResponseEntity.ok(productService.searchProducts(search));
+        } else if (popular != null && popular) {
+            return ResponseEntity.ok(productService.findPopularProducts());
+        } else {
+            return ResponseEntity.ok(productService.getAllProducts());
+        }
+    }
+
 	@GetMapping("/category/{category}")
 	public ResponseEntity<?> getProductsByCategory(@PathVariable String category) {
 
-		// List<Product> products = productService.getProductsByCategory(category);
-		List<Product> products = null;
+		List<Product> products = productService.getProductsByCategory(category);
 		return ResponseEntity.ok(products);
 	}
 

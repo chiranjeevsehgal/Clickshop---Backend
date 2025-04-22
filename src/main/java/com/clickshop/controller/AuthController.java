@@ -429,6 +429,7 @@ public class AuthController {
                 response.put("userId", user.getId());
                 response.put("role", user.getRole());
                 response.put("isAdmin", user.isAdmin());
+                response.put("status", user.getStatus());
 
                 return ResponseEntity.ok().body(response);
             } else {

@@ -5,12 +5,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Scanner;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.clickshop.entity.Product;
 import com.clickshop.entity.User;
 import com.clickshop.entity.User.Role;
 import com.clickshop.repository.AdminRepository;
@@ -224,5 +224,6 @@ public class UserServiceImpl implements UserService {
 		}
 		return false; // If user is already normal or not found
 	}
+
 
 }

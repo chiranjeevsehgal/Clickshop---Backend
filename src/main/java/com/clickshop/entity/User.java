@@ -63,7 +63,7 @@ public class User {
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JsonManagedReference(value = "user-cart")
-	private List<Cart> cart = new ArrayList<>();
+	private List<Cart> cart = new ArrayList<>();	
 
 	public String getAuthProvider() {
 		return authProvider;

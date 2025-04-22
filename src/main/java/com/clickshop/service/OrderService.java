@@ -1,5 +1,6 @@
 package com.clickshop.service;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -19,6 +20,6 @@ public interface OrderService {
 	public boolean cancelOrder(int orderId);
 	public Map<String, Object> prepareOrder(Map<String, Object> orderRequest, User user);
 	public List<OrderItem> saveOrder(Map<String, Object> orderData, User user) ;
-	
+	public List<OrderItem> getOrdersBetweenDates(Date startDate, Date endDate);
 
 }

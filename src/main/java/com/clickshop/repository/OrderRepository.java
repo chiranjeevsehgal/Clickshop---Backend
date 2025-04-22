@@ -1,5 +1,7 @@
 package com.clickshop.repository;
 
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,6 +35,9 @@ public interface OrderRepository extends JpaRepository<OrderItem, Integer> {
     	Optional<OrderItem> findByIdAndUser(int id, User user);
     	
 		List<OrderItem> findByPaymentId(String paymentId);
+
+		List<OrderItem> findByOrderDateBetween(Date startDate, Date endDate);
+
 
 
 

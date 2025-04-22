@@ -1,5 +1,7 @@
 package com.clickshop.entity;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -22,15 +24,24 @@ public class Product {
 	private float price;
 	private int stock;
 
-	public Product(String name, float price, String description, int stock, String category, String imageUrl) {
+	@Column(name = "created_at")
+	private LocalDateTime createdAt;
+
+	private boolean featured = false;
+
+	public Product(int id, String name, String description, String category, String imageUrl, float price, int stock, boolean featured, LocalDateTime createdAt) {
+		this.id = id;
 		this.name = name;
-		this.price = price;
 		this.description = description;
-		this.stock = stock;
 		this.category = category;
 		this.imageUrl = imageUrl;
+		this.price = price;
+		this.stock = stock;
+		this.featured = featured;
+		this.createdAt = createdAt;
+
 	}
-	
+
 	public Product() {
 		
 	}
@@ -49,6 +60,14 @@ public class Product {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public LocalDateTime getCreatedAt() { 
+		return createdAt; 
+	}
+	
+	public void setCreatedAt(LocalDateTime createdAt) { 
+		this.createdAt = createdAt; 
 	}
 
 	public String getDescription() {
@@ -85,7 +104,7 @@ public class Product {
 
 	public String toString() {
 		return "ID: " + id + " | " + name + " | Price: " + price + " | Description: " + description + " | Stock: "
-				+ stock + " | Category: " + category + " | Image Url: " + imageUrl;
+				+ stock + " | Category: " + category + " | Image Url: " + imageUrl + " | Created At: " + createdAt;
 	}
 
 	public String getImageUrl() {
@@ -94,5 +113,13 @@ public class Product {
 
 	public void setImageUrl(String imageUrl) {
 		this.imageUrl = imageUrl;
+	}
+
+	public boolean isFeatured() {
+		return featured;
+	}
+
+	public void setFeatured(boolean featured) {
+		this.featured = featured;
 	}
 }
