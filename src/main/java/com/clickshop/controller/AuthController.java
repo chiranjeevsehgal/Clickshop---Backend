@@ -86,7 +86,7 @@ public class AuthController {
 
     private final Map<String, Map<String, Object>> otpStorage = new ConcurrentHashMap<>();
 
-    private static final int OTP_VALID_DURATION = 2;
+    private static final int OTP_VALID_DURATION = 10;
 
     AuthController(EmailController emailController) {
         this.emailController = emailController;

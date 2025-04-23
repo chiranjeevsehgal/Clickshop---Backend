@@ -38,10 +38,34 @@ public class PaymentServiceImpl implements PaymentService {
         System.out.println(orderRequest);
         System.out.println("orderSummary");
         System.out.println(orderSummary);
-        double amount = (double) orderSummary.get("total");
+        Object totalObj = orderSummary.get("total");
+        double amount;
+        double amount1;
+        Object totalObj1 = orderRequest.get("total");
+        // double amount1 = (double) orderRequest.get("total");
+        if (totalObj1 instanceof Integer) {
+            amount1 = ((Integer) totalObj1).doubleValue();
+        } else if (totalObj1 instanceof Double) {
+            amount1 = (Double) totalObj1;
+        } else if (totalObj1 instanceof String) {
+            // In case it's a String that needs to be parsed
+            amount1 = Double.parseDouble((String) totalObj1);
+        } else if (totalObj1 instanceof Long) {
+            amount1 = ((Long) totalObj1).doubleValue();
+        } else {
+            // Handle unexpected types
+            throw new IllegalArgumentException("Unexpected type for total: " + 
+                                              (totalObj != null ? totalObj.getClass().getName() : "null"));
+        }
+        System.out.println("Total 1");
+        System.out.println(amount1);
         
         // Convert to paise (Razorpay uses smallest currency unit)
-        int amountInPaise = convertToPaise(amount);
+        // System.out.println("Amount");
+        // System.out.println(amount);
+        int amountInPaise = convertToPaise(amount1);
+        System.out.println("In paise");
+        System.out.println(amountInPaise);
         
         // Generate a receipt ID
         String receiptId = UUID.randomUUID().toString();
