@@ -5,6 +5,9 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import com.clickshop.dto.ProductSummary;
+import com.clickshop.entity.Product;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,11 +25,11 @@ public class GeminiServiceImpl implements GeminiService {
     private final String API_URL = "https://generativelanguage.googleapis.com/v1/models/";
 
     @Override
-    public String generateAiResponse(String prompt) {
+    public String generateAiResponse(String prompt, List<ProductSummary> productSummaries) {
         try {
+            System.out.println(productSummaries);
             System.out.println("Sending request to Gemini API for prompt: ");
-            
-            String enhancedPrompt = "You are an e-commerce shopping assistant. Provide concise, relevant product information. Only answer questions related to shopping, products, and e-commerce, if a question is unrelated to e-commerce, politely say that I am not allowed to help on this, keep responses concise and to the point without unnecessary explanations, use bullet points where appropriate, avoid lengthy conclusions and summaries, focus on practical, actionable product recommendations. Give in plain string not markdown or bold and all." + prompt;
+            String enhancedPrompt = "You are an e-commerce shopping assistant. Provide concise, relevant product information. Only answer questions related to shopping, products, and e-commerce, if a question is unrelated to e-commerce, politely say that I am not allowed to help on this, keep responses concise and to the point without unnecessary explanations, use bullet points where appropriate, avoid lengthy conclusions and summaries, focus on practical, actionable product recommendations. I am giving all the products existing in our store, give the response in context to that. \n"+ productSummaries.toString() + "\nIf the request is for a product, give the id for all the resulting products from the database as response and all the response should be from this data, nothing out of this. And if there is some condition like price limit, then the response should abide by that condition. Give in plain string not markdown or bold and all." + prompt;
             
             RestTemplate restTemplate = new RestTemplate();
             

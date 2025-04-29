@@ -3,6 +3,7 @@ package com.clickshop.service;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.clickshop.dto.ProductSummary;
 import com.clickshop.entity.Product;
 
 public interface ProductService {
@@ -28,6 +29,7 @@ public interface ProductService {
 	
 	public List<Product> getProductsBetweenDates(LocalDate startDate, LocalDate endDate);
 
+	public List<ProductSummary> getProductSummaries();
 
 
 }

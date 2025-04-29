@@ -2,7 +2,6 @@ package com.clickshop.repository;
 
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.Query;
@@ -10,6 +9,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.clickshop.dto.ProductSummary;
 import com.clickshop.entity.OrderItem;
 import com.clickshop.entity.Product;
 
@@ -28,7 +28,9 @@ public interface ProductRepository extends CrudRepository<Product, Integer> {
 
     List<Product> findByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
 
-
+    @Query("SELECT new com.clickshop.dto.ProductSummary(p.id, p.name, p.category, p.description, p.price) FROM Product p")
+    List<ProductSummary> findProductSummaries();
+    
 
     
 	

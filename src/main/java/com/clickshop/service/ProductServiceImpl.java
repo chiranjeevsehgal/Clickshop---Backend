@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.clickshop.dto.ProductSummary;
 import com.clickshop.entity.OrderItem;
 import com.clickshop.entity.Product;
 import com.clickshop.repository.ProductRepository;
@@ -35,8 +36,12 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
+	public List<ProductSummary> getProductSummaries() {
+		return productRepository.findProductSummaries();
+	}
+
+	@Override
 	public boolean deleteProduct(int pno) {
-		// TODO Auto-generated method stub
 		if (productRepository.existsById(pno)) {
 			productRepository.deleteById(pno);
 			if (productRepository.existsById(pno)) {
@@ -112,26 +117,26 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	public List<Product> searchProducts(String searchTerm) {
-        
-        return productRepository.searchProducts(searchTerm);
-    }
+
+		return productRepository.searchProducts(searchTerm);
+	}
 
 	@Override
 	public List<Product> findPopularProducts() {
-        
-        return productRepository.findByFeaturedTrue();
-    }
-	
-	@Override
-	public List<String> findAllCategories() {
-        return productRepository.findAllCategories();
-    }
+
+		return productRepository.findByFeaturedTrue();
+	}
 
 	@Override
-	public List<Product> getProductsBetweenDates(LocalDate startDate, LocalDate  endDate) {
-        LocalDateTime start = startDate.atStartOfDay();
-    	LocalDateTime end = endDate.atTime(23, 59, 59);
-    	return productRepository.findByCreatedAtBetween(start, end);
-    }
+	public List<String> findAllCategories() {
+		return productRepository.findAllCategories();
+	}
+
+	@Override
+	public List<Product> getProductsBetweenDates(LocalDate startDate, LocalDate endDate) {
+		LocalDateTime start = startDate.atStartOfDay();
+		LocalDateTime end = endDate.atTime(23, 59, 59);
+		return productRepository.findByCreatedAtBetween(start, end);
+	}
 
 }

@@ -122,26 +122,6 @@ public class UserController {
 		return ("register");
 	}
 
-
-	@GetMapping("/products")
-	public ResponseEntity<?> getProducts(HttpServletRequest request) {
-		
-		User.Role role = securityUtils.getCurrentUserRole();
-
-		if (role == null || role.equals(User.Role.USER)) {
-			List<Product> products = productService.getAllProducts();
-			return ResponseEntity.ok(products);
-		}
-
-		if (role.equals(User.Role.ADMIN) || role.equals(User.Role.SUPER_ADMIN)) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-					.body(Map.of("error", "Unauthorized access", "redirect", "/auth/login"));
-		}
-
-		return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-				.body(Map.of("error", "Authentication required", "redirect", "/clickshop/auth/login"));
-	}
-
 	// Update user password
 	@PutMapping("/changepassword")
 	public ResponseEntity<String> updatePassword(

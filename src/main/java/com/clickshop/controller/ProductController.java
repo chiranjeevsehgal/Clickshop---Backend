@@ -23,8 +23,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.clickshop.entity.OrderItem;
 import com.clickshop.entity.Product;
+import com.clickshop.entity.User;
 import com.clickshop.security.SecurityUtils;
 import com.clickshop.service.ProductService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/product")
@@ -142,6 +145,26 @@ public class ProductController {
     public ResponseEntity<List<String>> getAllCategories() {
         return ResponseEntity.ok(productService.findAllCategories());
     }
+
+	@GetMapping("/products")
+	public ResponseEntity<?> getProducts(HttpServletRequest request) {
+		
+		List<Product> products = productService.getAllProducts();
+		return ResponseEntity.ok(products);
+		
+		// User.Role role = securityUtils.getCurrentUserRole();
+
+		// if (role == null || role.equals(User.Role.USER)) {
+		// }
+
+		// if (role.equals(User.Role.ADMIN) || role.equals(User.Role.SUPER_ADMIN)) {
+		// 	return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+		// 			.body(Map.of("error", "Unauthorized access", "redirect", "/auth/login"));
+		// }
+
+		// return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+		// 		.body(Map.of("error", "Authentication required", "redirect", "/clickshop/auth/login"));
+	}
 
 	@GetMapping
     public ResponseEntity<List<Product>> getAllProducts(
