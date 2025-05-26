@@ -7,5 +7,7 @@ import com.clickshop.entity.Product;
 
 public interface GeminiService {
     
-    public String generateAiResponse(String prompt, List<ProductSummary> productSummaries);
+    public String generateAiResponse(String prompt);
+    
+    public String generateAiResponse_withProducts(String prompt, List<ProductSummary> productSummaries);
 }

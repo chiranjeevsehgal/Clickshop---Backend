@@ -24,8 +24,15 @@ public class GeminiController {
 
 	@PostMapping()	
 	public ResponseEntity<GeminiResponse> getAiResponse(@RequestBody GeminiRequest request) {
+		String response = geminiService.generateAiResponse(request.getPrompt());
+		return ResponseEntity.ok(new GeminiResponse(response));
+	}
+	
+	
+	@PostMapping("/products")	
+	public ResponseEntity<GeminiResponse> getAiResponsewithProducts(@RequestBody GeminiRequest request) {
 		var productSummaries = productService.getProductSummaries();
-		String response = geminiService.generateAiResponse(request.getPrompt(), productSummaries);
+		String response = geminiService.generateAiResponse_withProducts(request.getPrompt(), productSummaries);
 		return ResponseEntity.ok(new GeminiResponse(response));
 	}
 
